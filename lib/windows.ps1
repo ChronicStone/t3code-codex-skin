@@ -63,18 +63,20 @@ function Find-T3App {
 # Runs one of the skin's Node scripts: system node if installed, else T3's own Electron
 # binary in Node mode (ELECTRON_NO_ASAR lets it read app.asar as a plain file).
 function Invoke-SkinNode {
-  param($App, [string[]]$Arguments)
+  param($App, [string[]]$Arguments, [string]$OutFile)
   $node = Get-Command node -ErrorAction SilentlyContinue
   $quoted = ($Arguments | ForEach-Object { '"' + $_ + '"' }) -join ' '
   $err = [IO.Path]::GetTempFileName()
+  $extra = @{}
+  if ($OutFile) { $extra.RedirectStandardOutput = $OutFile }
   try {
     if ($node) {
-      $p = Start-Process -FilePath $node.Source -ArgumentList $quoted -Wait -PassThru -NoNewWindow -RedirectStandardError $err
+      $p = Start-Process -FilePath $node.Source -ArgumentList $quoted -Wait -PassThru -NoNewWindow -RedirectStandardError $err @extra
     } else {
       $env:ELECTRON_RUN_AS_NODE = '1'
       $env:ELECTRON_NO_ASAR = '1'
       try {
-        $p = Start-Process -FilePath $App.Exe -ArgumentList $quoted -Wait -PassThru -NoNewWindow -RedirectStandardError $err
+        $p = Start-Process -FilePath $App.Exe -ArgumentList $quoted -Wait -PassThru -NoNewWindow -RedirectStandardError $err @extra
       } finally {
         Remove-Item Env:ELECTRON_RUN_AS_NODE, Env:ELECTRON_NO_ASAR -ErrorAction SilentlyContinue
       }
@@ -85,6 +87,71 @@ function Invoke-SkinNode {
   } finally {
     Remove-Item $err -ErrorAction SilentlyContinue
   }
+}
+
+# Revision of the skin files (lib/skin-config.mjs); applied pages carry the one they were built from.
+function Get-SkinRev {
+  param($App)
+  $out = [IO.Path]::GetTempFileName()
+  try {
+    Invoke-SkinNode $App @((Join-Path $script:SkinRoot 'lib/skin-config.mjs'), 'rev') -OutFile $out
+    return (Get-Content $out -Raw).Trim()
+  } finally {
+    Remove-Item $out -ErrorAction SilentlyContinue
+  }
+}
+
+# True when the installed skin was built from the current skin files.
+function Test-SkinCurrent {
+  param($App, [string]$Asar)
+  $tmp = [IO.Path]::GetTempFileName()
+  try {
+    Read-Inner $App $Asar $tmp
+    $rev = Get-SkinRev $App
+    return [bool]($rev -and (Select-String -Path $tmp -SimpleMatch "codex-skin:rev $rev" -Quiet))
+  } finally {
+    Remove-Item $tmp -ErrorAction SilentlyContinue
+  }
+}
+
+# The updater agent behind the skin's rail button (lib/agent.mjs, port 47391). Starts it hidden
+# unless it already answers.
+$script:AgentPort = 47391
+function Test-SkinAgent {
+  $client = New-Object System.Net.Sockets.TcpClient
+  try {
+    $wait = $client.BeginConnect('127.0.0.1', $script:AgentPort, $null, $null)
+    return ($wait.AsyncWaitHandle.WaitOne(500) -and $client.Connected)
+  } catch { return $false } finally { $client.Close() }
+}
+
+function Start-SkinAgent {
+  param($App)
+  if (Test-SkinAgent) { return }
+  $script = Join-Path $script:SkinRoot 'lib/agent.mjs'
+  $log = Join-Path $script:SkinRoot 'agent.log'
+  $node = Get-Command node -ErrorAction SilentlyContinue
+  if ($node) {
+    Start-Process -FilePath $node.Source -ArgumentList ('"' + $script + '"') -WindowStyle Hidden -RedirectStandardOutput $log -RedirectStandardError "$log.err" | Out-Null
+  } elseif ($App) {
+    $env:ELECTRON_RUN_AS_NODE = '1'
+    $env:ELECTRON_NO_ASAR = '1'
+    try {
+      Start-Process -FilePath $App.Exe -ArgumentList ('"' + $script + '"') -WindowStyle Hidden -RedirectStandardOutput $log -RedirectStandardError "$log.err" | Out-Null
+    } finally {
+      Remove-Item Env:ELECTRON_RUN_AS_NODE, Env:ELECTRON_NO_ASAR -ErrorAction SilentlyContinue
+    }
+  }
+}
+
+function Stop-SkinAgent {
+  $pidFile = Join-Path $script:SkinRoot '.agent-pid'
+  if (-not (Test-Path $pidFile)) { return }
+  $agentPid = 0
+  if ([int]::TryParse((Get-Content $pidFile -Raw).Trim(), [ref]$agentPid)) {
+    Stop-Process -Id $agentPid -Force -ErrorAction SilentlyContinue
+  }
+  Remove-Item $pidFile -Force -ErrorAction SilentlyContinue
 }
 
 function Read-Inner {
@@ -105,8 +172,12 @@ function Test-Skinned {
 
 function Get-T3Processes {
   param($App)
+  # The updater agent may run on T3's own exe (when there is no system node); it isn't T3.
+  $agentPid = -1
+  $pidFile = Join-Path $script:SkinRoot '.agent-pid'
+  if (Test-Path $pidFile) { [void][int]::TryParse((Get-Content $pidFile -Raw).Trim(), [ref]$agentPid) }
   Get-Process -ErrorAction SilentlyContinue | Where-Object {
-    try { $_.Path -and $_.Path.StartsWith($App.Dir, [StringComparison]::OrdinalIgnoreCase) } catch { $false }
+    try { $_.Id -ne $agentPid -and $_.Path -and $_.Path.StartsWith($App.Dir, [StringComparison]::OrdinalIgnoreCase) } catch { $false }
   }
 }
 

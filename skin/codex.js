@@ -77,12 +77,22 @@
     hide: icon('<path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/>'),
     show: icon('<path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/>'),
     reset: icon('<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>'),
+    palette: icon(
+      '<path d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z"/><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/>',
+    ),
+    download: icon('<path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/>'),
   };
+
+  // The desktop app routes in the URL hash (TanStack hash history: app://.../#/env/thread);
+  // the browser build routes in the path. Read and write whichever T3 uses.
+  const hashRouting = () => location.hash.startsWith("#/") || !/^https?:$/.test(location.protocol);
+  const routePath = () => (hashRouting() ? location.hash.slice(1).split(/[?#]/)[0] || "/" : location.pathname);
 
   // Client-side navigation through T3's router (it listens to popstate).
   const navigate = (path) => {
-    if (location.pathname === path) return;
-    history.pushState(history.state, "", path);
+    if (routePath() === path) return;
+    const url = hashRouting() ? `${location.pathname}${location.search}#${path}` : path;
+    history.pushState(history.state, "", url);
     window.dispatchEvent(new PopStateEvent("popstate", { state: history.state }));
   };
 
@@ -135,7 +145,7 @@
         el.firstChild.addEventListener("click", () => navigate(item.path));
         return el;
       });
-      setAttrIfChanged(li.firstChild, "data-active", location.pathname.startsWith(item.path) ? "true" : null);
+      setAttrIfChanged(li.firstChild, "data-active", routePath().startsWith(item.path) ? "true" : null);
     }
   };
 
@@ -880,7 +890,7 @@
     menuAnchor = null;
   };
 
-  // entries: { label, icon, action, disabled } or "separator".
+  // entries: { label, icon, action, disabled }, { note: (div) => ... } (text only) or "separator".
   const openMenu = (anchor, title, entries, variant = "") => {
     closeMenu();
     hideTip();
@@ -900,6 +910,13 @@
         separator.className = "cx-menu-separator";
         separator.setAttribute("role", "separator");
         menu.append(separator);
+        continue;
+      }
+      if (entry.note) {
+        const note = document.createElement("div");
+        note.className = "cx-menu-note";
+        entry.note(note);
+        menu.append(note);
         continue;
       }
       const item = document.createElement("button");
@@ -1229,7 +1246,7 @@
   };
 
   const isCurrentThread = (thread) =>
-    thread.row ? thread.row.getAttribute("aria-current") === "page" : decodeURI(location.pathname) === decodeURI(thread.path ?? "");
+    thread.row ? thread.row.getAttribute("aria-current") === "page" : decodeURI(routePath()) === decodeURI(thread.path ?? "");
 
   // Popover listing every working thread: project icon, title, project and time running.
   const openWorkingMenu = (anchor) => {
@@ -1301,6 +1318,156 @@
     setAttrIfChanged(toggle, "data-cx-working", count > 0 ? "true" : null);
   };
 
+  // ---------- Skin updates ----------
+  // The rail's "Codex skin" button: shows the skin version, checks the repo for new commits and
+  // runs "Update & restart" through the local updater agent (lib/agent.mjs), since a page can't
+  // run git or restart T3 itself. build-html.mjs bakes the revision, port and token into the page.
+  const skinConfig = window.__codexSkin ?? null;
+  const skinUpdate = { data: null, error: null, checkedAt: 0, checking: false, updating: false };
+
+  const agentFetch = async (path, init = {}) => {
+    const response = await fetch(`http://127.0.0.1:${skinConfig.agent.port}${path}`, {
+      ...init,
+      headers: { "x-codex-skin-token": skinConfig.agent.token },
+      signal: AbortSignal.timeout(path.startsWith("/update") ? 120_000 : 30_000),
+    });
+    const body = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(body.error ?? `HTTP ${response.status}`);
+    return body;
+  };
+
+  // What the button offers: pulled commits to install, or skin files newer than this page.
+  const skinPending = () => {
+    const data = skinUpdate.data;
+    if (!data) return null;
+    if (data.behind > 0) return "update";
+    if (data.rev && data.rev !== skinConfig.rev) return "apply";
+    return null;
+  };
+
+  const checkSkin = async (refresh = false) => {
+    if (!skinConfig || skinUpdate.checking) return;
+    skinUpdate.checking = true;
+    try {
+      skinUpdate.data = await agentFetch(`/status${refresh ? "?refresh=1" : ""}`);
+      skinUpdate.error = null;
+    } catch (error) {
+      skinUpdate.error = error instanceof TypeError || error.name === "TimeoutError" ? "offline" : error.message;
+    } finally {
+      skinUpdate.checking = false;
+      skinUpdate.checkedAt = Date.now();
+      schedule();
+    }
+  };
+
+  const runSkinUpdate = async (anchor) => {
+    skinUpdate.updating = true;
+    openSkinMenu(anchor);
+    try {
+      const result = await agentFetch("/update", { method: "POST" });
+      if (!result.ok) throw new Error(result.error ?? "Update failed.");
+      // T3 quits and reopens in a few seconds; keep "Restarting" on screen until then.
+    } catch (error) {
+      skinUpdate.updating = false;
+      skinUpdate.error = error.message;
+      if (menuEl?.classList.contains("cx-skin-menu")) openSkinMenu(anchor);
+    }
+  };
+
+  const ago = (time) => {
+    const minutes = Math.floor((Date.now() - time) / 60_000);
+    return minutes < 1 ? "just now" : minutes < 60 ? `${minutes}m ago` : `${Math.floor(minutes / 60)}h ago`;
+  };
+
+  const openSkinMenu = (anchor) => {
+    const pending = skinPending();
+    const data = skinUpdate.data;
+    const offline = skinUpdate.error === "offline";
+    let headline;
+    let detail;
+    if (skinUpdate.updating) {
+      headline = "Updating…";
+      detail = "T3 Code restarts in a few seconds.";
+    } else if (offline) {
+      headline = "Updater not running";
+      detail = "Run ./install-auto-apply.sh (macOS) or install-auto-apply.ps1 (Windows) once.";
+    } else if (skinUpdate.error) {
+      headline = "Couldn't update";
+      detail = skinUpdate.error;
+    } else if (pending === "update") {
+      headline = data.behind === 1 ? "1 update available" : `${data.behind} updates available`;
+      detail = "Pulls the skin repo, applies it and restarts T3 Code.";
+    } else if (pending === "apply") {
+      headline = "New skin ready";
+      detail = "Restart T3 Code to apply it.";
+    } else if (data) {
+      headline = "Up to date";
+      detail = data.fetchError ? `Couldn't reach GitHub: ${data.fetchError}` : `Checked ${ago(skinUpdate.checkedAt)}`;
+    } else {
+      headline = "Checking…";
+      detail = "";
+    }
+    const entries = [
+      {
+        note: (div) => {
+          div.innerHTML = '<span class="cx-skin-headline"></span><span class="cx-skin-detail"></span><span class="cx-skin-version"></span>';
+          div.dataset.state = skinUpdate.updating ? "busy" : pending ? "pending" : skinUpdate.error ? "error" : "ok";
+          div.children[0].textContent = headline;
+          div.children[1].textContent = detail;
+          div.children[1].hidden = !detail;
+          div.children[2].textContent = `Version ${data?.head ?? skinConfig.rev.slice(0, 7)}`;
+        },
+      },
+      "separator",
+    ];
+    if (pending && !skinUpdate.updating) {
+      entries.push({
+        label: pending === "update" ? "Update & restart" : "Apply & restart",
+        icon: ICONS.download,
+        action: () => runSkinUpdate(anchor),
+      });
+    }
+    entries.push({
+      label: skinUpdate.checking ? "Checking…" : "Check for updates",
+      icon: ICONS.reset,
+      disabled: skinUpdate.checking || skinUpdate.updating,
+      action: async () => {
+        openSkinMenu(anchor);
+        await checkSkin(true);
+        openSkinMenu(anchor);
+      },
+    });
+    openMenu(anchor, "Codex skin", entries, "cx-skin-menu");
+    anchor.setAttribute("aria-expanded", "true");
+  };
+
+  const ensureSkinButton = (menu) => {
+    if (!skinConfig) return;
+    const li = ensureItem(menu, "skin", () => {
+      const el = railItem("skin", "Codex skin", 97);
+      el.firstChild.innerHTML = ICONS.palette;
+      el.firstChild.addEventListener("click", () => {
+        if (menuEl?.classList.contains("cx-skin-menu")) return closeMenu(true);
+        openSkinMenu(el.firstChild);
+        // A fresh look each time the menu opens, unless one just ran.
+        if (Date.now() - skinUpdate.checkedAt > 60_000) checkSkin().then(() => {
+          if (menuEl?.classList.contains("cx-skin-menu")) openSkinMenu(el.firstChild);
+        });
+      });
+      return el;
+    });
+    const pending = skinPending();
+    setAttrIfChanged(li.firstChild, "data-attention", pending ? "true" : null);
+    const label = pending === "update" ? "Codex skin · update available" : pending === "apply" ? "Codex skin · restart to apply" : "Codex skin";
+    setAttrIfChanged(li.firstChild, "data-tip", label);
+    setAttrIfChanged(li.firstChild, "aria-label", label);
+  };
+
+  if (skinConfig) {
+    setTimeout(() => checkSkin(), 4000);
+    setInterval(() => checkSkin(), 30 * 60_000);
+  }
+
   const ensureRail = () => {
     captureCatalog();
     const menu = railMenu();
@@ -1316,6 +1483,7 @@
     refreshWorking();
     ensureProjects(menu);
     ensureWorkingBadge(menu);
+    ensureSkinButton(menu);
     ensureWorkingShelf();
     rememberFocusedThread();
     maybeHarvest();
@@ -1323,10 +1491,10 @@
 
   // Page-change animation: flag the root for one animation cycle whenever the path changes.
   // Promoting a draft to a thread (first send) replaces the URL; that one stays still.
-  let lastPath = location.pathname;
+  let lastPath = routePath();
   let routeTimer = 0;
   const onRoute = (replaced) => {
-    const path = location.pathname;
+    const path = routePath();
     if (path === lastPath) return;
     const fromDraft = lastPath.startsWith("/draft/");
     lastPath = path;

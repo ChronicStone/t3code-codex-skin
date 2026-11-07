@@ -1,8 +1,9 @@
 #!/bin/sh
 # macOS: re-apply the skin automatically after every T3 Code update.
 # Installs a LaunchAgent that runs auto-apply.sh at login, whenever the app bundle changes,
-# and every 5 minutes (a no-op while the skin is in place).
-#   ./install-auto-apply.sh             install or update
+# and every 5 minutes (a no-op while the skin is in place), plus the small updater agent behind
+# the skin's "Codex skin" rail button (checks for skin updates, pulls, applies, restarts T3).
+#   ./install-auto-apply.sh            install or update
 #   ./install-auto-apply.sh --uninstall remove it
 #
 # It runs through a tiny helper app, "Codex Skin Updater.app", because macOS only lets an app
@@ -12,6 +13,8 @@ set -eu
 here="$(cd "$(dirname "$0")" && pwd)"
 label="dev.t3-codex-skin.auto-apply"
 plist="$HOME/Library/LaunchAgents/$label.plist"
+agent_label="dev.t3-codex-skin.agent"
+agent_plist="$HOME/Library/LaunchAgents/$agent_label.plist"
 helper="$here/Codex Skin Updater.app"
 uid="$(id -u)"
 
@@ -24,7 +27,8 @@ done
 
 if [ "${1:-}" = "--uninstall" ]; then
   launchctl bootout "gui/$uid/$label" 2>/dev/null || true
-  rm -f "$plist"
+  launchctl bootout "gui/$uid/$agent_label" 2>/dev/null || true
+  rm -f "$plist" "$agent_plist"
   echo "Auto-apply removed. (The helper app stays in $here; delete it if you like.)"
   exit 0
 fi
@@ -73,6 +77,24 @@ plutil -lint "$plist" >/dev/null
 launchctl bootout "gui/$uid/$label" 2>/dev/null || true
 launchctl bootstrap "gui/$uid" "$plist"
 echo "Auto-apply installed ($label)."
+
+cat > "$agent_plist" <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+  <key>Label</key><string>$agent_label</string>
+  <key>ProgramArguments</key><array><string>/bin/sh</string><string>$here/lib/agent.sh</string></array>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+  <key>ThrottleInterval</key><integer>10</integer>
+  <key>StandardOutPath</key><string>$here/agent.log</string>
+  <key>StandardErrorPath</key><string>$here/agent.log</string>
+</dict></plist>
+EOF
+plutil -lint "$agent_plist" >/dev/null
+launchctl bootout "gui/$uid/$agent_label" 2>/dev/null || true
+launchctl bootstrap "gui/$uid" "$agent_plist"
+echo "Updater agent installed ($agent_label, http://127.0.0.1:47391)."
 
 if [ "$new_helper" = 1 ]; then
   echo

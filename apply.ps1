@@ -49,6 +49,10 @@ try {
   Remove-Item (Join-Path $SkinRoot '.auto-apply-failed'), (Join-Path $SkinRoot '.auto-apply-later') -Force -ErrorAction SilentlyContinue
   Write-Host "Codex skin applied to $($app.Name) $($app.Version)."
   if ($running) { Start-Process -FilePath $app.Exe; Write-Host "Reopened $($app.Name)." }
+  # The updater agent exits after an update; bring it back if auto-apply is installed.
+  if (Get-ScheduledTask -TaskName 'T3 Codex Skin auto-apply' -ErrorAction SilentlyContinue) {
+    try { Start-SkinAgent $app } catch {}
+  }
   else { Write-Host 'Open T3 Code to see it. Toggle the skin live with Ctrl+Alt+K.' }
 } finally {
   Remove-Item -LiteralPath $work -Recurse -Force -ErrorAction SilentlyContinue

@@ -63,6 +63,17 @@ powershell -ExecutionPolicy Bypass -File .\install-auto-apply.ps1      # re-appl
 - The scripts find T3 in the usual places (`%LOCALAPPDATA%\Programs\T3 Code*`, Squirrel `app-*` folders, Program Files). If yours is elsewhere, pass `-AppDir "C:\path\to\T3 Code"`.
 - The log is in `auto-apply.log`.
 
+## Skin updates from inside T3
+
+The palette button at the bottom of the rail, above Settings, shows the skin's version and checks this repo for new commits. It gets a small lilac dot when an update is waiting.
+
+- **Update & restart** pulls the repo, applies the skin and restarts T3 Code.
+- **Check for updates** looks right away. Otherwise the button checks when T3 starts, then every 30 minutes.
+
+A web page can't run git or restart an app, so the button talks to a small local helper, `lib/agent.mjs`. It listens on `127.0.0.1:47391` only and answers only the skin, which carries a per-machine secret from `.agent-token`. The `install-auto-apply` scripts start it: a second LaunchAgent on macOS, the existing scheduled task on Windows. On macOS, applying still goes through `Codex Skin Updater.app`, so you don't approve anything new. If the button says "Updater not running", run the `install-auto-apply` script again.
+
+Auto-apply also picks up new skin files on its own, after a `git pull` or a local edit. On macOS it applies them quietly and they show at the next restart. On Windows it applies them the next time T3 is closed.
+
 ## Everyday commands
 
 | | macOS | Windows |
@@ -70,7 +81,7 @@ powershell -ExecutionPolicy Bypass -File .\install-auto-apply.ps1      # re-appl
 | Apply / re-apply | `./apply.sh` | `.\apply.ps1 -Restart` |
 | Remove the skin (pauses auto-apply) | `./restore.sh` | `.\restore.ps1 -Restart` |
 | Remove auto-apply | `./install-auto-apply.sh --uninstall` | `.\install-auto-apply.ps1 -Uninstall` |
-| Update the skin | `git pull && ./apply.sh` | `git pull; .\apply.ps1 -Restart` |
+| Update the skin | Rail button > **Update & restart**, or `git pull && ./apply.sh` | Rail button > **Update & restart**, or `git pull; .\apply.ps1 -Restart` |
 
 On Windows, run each `.ps1` as `powershell -ExecutionPolicy Bypass -File …`, as in the setup above. `restore` pauses auto-apply until you run `apply` again. If auto-apply fails on one version, it notifies you once and waits for the next update; run `apply` by hand to see the error.
 

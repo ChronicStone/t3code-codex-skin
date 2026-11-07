@@ -1,17 +1,17 @@
-# Windows: re-apply the skin when a T3 Code update removed it. Run hidden by the scheduled
-# task that install-auto-apply.ps1 creates (at logon and every 5 minutes). A cheap no-op while
-# the skin is in place.
-#   - T3 closed: re-applies silently.
-#   - T3 open: asks once per version whether to restart it now (running agents would stop).
-#     "Later" is asked again after 2 hours, or applied silently at the next logon.
+# Windows: keep the Codex skin in place. Run hidden by the scheduled task that
+# install-auto-apply.ps1 creates (at logon and every 5 minutes). A cheap no-op when nothing changed.
+#   - Keeps the updater agent behind the skin's rail button running (lib/agent.mjs).
+#   - T3 updated and lost the skin: T3 closed, re-applies silently; T3 open, asks once per version
+#     whether to restart it now (running agents would stop). "Later" is asked again after 2 hours.
+#   - The skin files changed (git pull, local edits): applies quietly the next time T3 is closed.
 . (Join-Path $PSScriptRoot 'lib/windows.ps1')
 $log = Join-Path $SkinRoot 'auto-apply.log'
 function Write-Log([string]$m) { Add-Content -Path $log -Value ("{0:yyyy-MM-dd HH:mm:ss} {1}" -f (Get-Date), $m) }
 
 try {
-  if (Test-Path (Join-Path $SkinRoot '.auto-apply-off')) { exit 0 }
   $app = Find-T3App
   if (-not $app) { exit 0 }
+  try { Start-SkinAgent $app } catch { Write-Log "agent start failed: $($_.Exception.Message)" }
 
   # Let an update finish installing first.
   for ($i = 0; $i -lt 60; $i++) {
@@ -22,8 +22,18 @@ try {
     Start-Sleep -Seconds 2
   }
   Start-Sleep -Seconds 3
+  if (Test-Path (Join-Path $SkinRoot '.auto-apply-off')) { exit 0 }
   $app = Find-T3App
-  if (-not $app -or (Test-Skinned $app $app.Asar)) { exit 0 }
+  if (-not $app) { exit 0 }
+  if (Test-Skinned $app $app.Asar) {
+    # Skin in place. Newer skin files wait until T3 is closed (or the rail button's
+    # "Update & restart", which applies and restarts on request).
+    if ((Get-T3Processes $app) -or (Test-SkinCurrent $app $app.Asar)) { exit 0 }
+    Write-Log 'Skin files changed, applying.'
+    $output = & (Join-Path $SkinRoot 'apply.ps1') 2>&1 | Out-String
+    Write-Log $output.Trim()
+    exit 0
+  }
 
   $failed = Join-Path $SkinRoot '.auto-apply-failed'
   if ((Test-Path $failed) -and (Get-Content $failed -Raw).Trim() -eq $app.Version) { exit 0 }
