@@ -69,6 +69,6 @@ fi
 cp "$work/app.asar" "$asar.codex-skin.tmp"
 mv "$asar.codex-skin.tmp" "$asar"
 
-rm -f "$here/.auto-apply-off"
+rm -f "$here/.auto-apply-off" "$here/.auto-apply-failed"
 echo "Codex skin applied to $(basename "$app") $version."
 echo "Restart T3 Code to see it. Toggle the skin live with Ctrl+Alt+K."

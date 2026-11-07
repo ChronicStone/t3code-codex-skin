@@ -7,6 +7,7 @@ param([switch]$Restart, [string]$AppDir)
 
 $app = Find-T3App -AppDir $AppDir
 if (-not $app) { throw 'T3 Code not found. Pass its install folder: -AppDir "C:\...\T3 Code"' }
+Write-Host "Found $($app.Name) $($app.Version) in $($app.Dir)"
 
 $running = [bool](Get-T3Processes $app)
 if ($running -and -not $Restart) {
@@ -44,6 +45,7 @@ try {
   if ($running) { Write-Host "Closing $($app.Name)..."; Stop-T3 $app }
   Set-Asar $app $copy
   Remove-Item (Join-Path $SkinRoot '.auto-apply-off') -Force -ErrorAction SilentlyContinue
+  Remove-Item (Join-Path $SkinRoot '.auto-apply-failed'), (Join-Path $SkinRoot '.auto-apply-later') -Force -ErrorAction SilentlyContinue
   Write-Host "Codex skin applied to $($app.Name) $($app.Version)."
   if ($running) { Start-Process -FilePath $app.Exe; Write-Host "Reopened $($app.Name)." }
   else { Write-Host 'Open T3 Code to see it. Toggle the skin live with Ctrl+Alt+K.' }

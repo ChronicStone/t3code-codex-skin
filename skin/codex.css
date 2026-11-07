@@ -8,9 +8,14 @@
 /* ---------- Palette ---------- */
 
 html.codex-skin {
-  --cx-chrome: #e8ebef;
+  --cx-chrome: #e9ebee;
   --cx-surface: #eff1f5;
-  --cx-sidebar-panel: color-mix(in srgb, #eff1f5 65%, #e8ebef);
+  --cx-sidebar-panel: #edeff2;
+  /* Depth, measured on Codex: sidebar + conversation form one raised card. A crisp edge
+   * (#dfe1e5 on the frame) and a soft ~8px shadow that darkens the frame toward it. */
+  --cx-panel-edge: rgba(60, 64, 90, 0.085);
+  --cx-panel-shadow: 0 0 1px rgba(30, 32, 48, 0.035), 0 1px 3px rgba(30, 32, 48, 0.03), 0 0 12px rgba(30, 32, 48, 0.045);
+  --cx-panel-shade: rgba(30, 32, 48, 0.035);
   --cx-ink: #4c4f69;
   --cx-ink-inverse: #eff1f5;
   --cx-text-secondary: color-mix(in srgb, var(--cx-ink) 70%, transparent);
@@ -55,6 +60,9 @@ html.codex-skin.dark {
   --cx-chrome: #242424;
   --cx-surface: #181818;
   --cx-sidebar-panel: #1c1c1c;
+  --cx-panel-edge: rgba(255, 255, 255, 0.07);
+  --cx-panel-shadow: 0 0 1px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.3), 0 0 14px rgba(0, 0, 0, 0.35);
+  --cx-panel-shade: rgba(0, 0, 0, 0.22);
   --cx-ink: #dfdfdf;
   --cx-ink-inverse: #161616;
   --cx-text-secondary: rgba(255, 255, 255, 0.62);
@@ -233,7 +241,8 @@ html.codex-skin [data-slot="sidebar"] [data-slot="sidebar-footer"] {
   width: var(--cx-rail);
   padding: 4px 8px 12px !important;
   z-index: 30;
-  background: var(--cx-chrome);
+  /* The panels' shadow, continued on the rail it would fall on (the rail is opaque). */
+  background: linear-gradient(to left, var(--cx-panel-shade), transparent 10px), var(--cx-chrome);
 }
 
 html.codex-skin [data-slot="sidebar"] [data-slot="sidebar-footer"] [data-sidebar="menu"] {
@@ -742,8 +751,12 @@ html.codex-skin [data-sidebar="sidebar"]::before {
   inset: var(--workspace-topbar-height, 52px) 0 4px 0;
   z-index: -1;
   background: var(--cx-sidebar-panel);
-  border: 1px solid var(--cx-border);
+  border: 1px solid var(--cx-panel-edge);
+  border-right-color: var(--cx-border);
   border-radius: var(--cx-panel-radius) 0 0 var(--cx-panel-radius);
+  box-shadow: var(--cx-panel-shadow);
+  /* Shadow on the outside only: none spills onto the conversation next to it. */
+  clip-path: inset(-24px 0 -24px -24px);
 }
 
 html.codex-skin .sidebar-stage-backdrop,
@@ -951,8 +964,10 @@ html.codex-skin header[data-chat-header] li:last-child {
 /* Content area below the header becomes the rounded surface. */
 html.codex-skin [data-chat-column-maximized-away] > header[data-chat-header] + div {
   margin: 0 4px 4px 0;
-  border: 1px solid var(--cx-border);
+  border: 1px solid var(--cx-panel-edge);
   border-left: 0;
+  box-shadow: var(--cx-panel-shadow);
+  clip-path: inset(-24px -24px -24px 0);
   border-radius: 0 var(--cx-panel-radius) var(--cx-panel-radius) 0;
   background: var(--cx-surface);
   overflow: hidden;
@@ -962,8 +977,9 @@ html.codex-skin [data-chat-column-maximized-away] > header[data-chat-header] + d
 /* Sidebar collapsed: the main panel stands alone next to the rail, fully rounded. */
 html.codex-skin [data-slot="sidebar"][data-state="collapsed"] ~ main [data-chat-column-maximized-away] > header[data-chat-header] + div,
 html.codex-skin [data-slot="sidebar"][data-state="collapsed"] ~ main[data-slot="sidebar-inset"]:not(:has([data-chat-column-maximized-away])) > div {
-  border-left: 1px solid var(--cx-border);
+  border-left: 1px solid var(--cx-panel-edge);
   border-radius: var(--cx-panel-radius);
+  clip-path: inset(-24px);
 }
 
 /* T3 pads the collapsed header to clear the traffic lights from the window edge;
@@ -986,7 +1002,8 @@ html.codex-skin [data-preview-panel-mode] {
 
 html.codex-skin [data-preview-panel-mode] [data-right-panel-surface-content] {
   margin: 0 4px 4px 0;
-  border: 1px solid var(--cx-border);
+  border: 1px solid var(--cx-panel-edge);
+  box-shadow: var(--cx-panel-shadow);
   border-radius: var(--cx-panel-radius);
   background: var(--cx-surface);
   overflow: hidden;
@@ -1003,8 +1020,10 @@ html.codex-skin [data-right-panel-surface-content] [data-surface-subheader] {
 /* Non-chat routes (settings, PRs, usage) get the same panel treatment. */
 html.codex-skin main[data-slot="sidebar-inset"]:not(:has([data-chat-column-maximized-away])) > div {
   margin: var(--workspace-topbar-height, 52px) 4px 4px 0;
-  border: 1px solid var(--cx-border);
+  border: 1px solid var(--cx-panel-edge);
   border-left: 0;
+  box-shadow: var(--cx-panel-shadow);
+  clip-path: inset(-24px -24px -24px 0);
   border-radius: 0 var(--cx-panel-radius) var(--cx-panel-radius) 0;
   background: var(--cx-surface) !important;
   overflow: hidden;
