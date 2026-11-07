@@ -43,11 +43,17 @@ function Find-T3App {
     $version = $exe.VersionInfo.ProductVersion
     if (-not $version) { $version = $exe.VersionInfo.FileVersion }
     if (-not $version) { $version = 'unknown' }
+    # Nightlies share one file version (0.1.8.0), so the build date tells builds apart.
+    $version = '{0}-{1:yyyyMMddHHmm}' -f $version, $exe.LastWriteTime
+    # Windows builds ship the UI (the server and its web client) in server.asar; app.asar only
+    # holds the window shell. macOS builds keep everything in app.asar.
+    $asar = Join-Path $appDir 'resources/server.asar'
+    if (-not (Test-Path $asar)) { $asar = Join-Path $appDir 'resources/app.asar' }
     $found += [pscustomobject]@{
       Name    = [IO.Path]::GetFileNameWithoutExtension($exe.Name)
       Dir     = $appDir
       Exe     = $exe.FullName
-      Asar    = Join-Path $appDir 'resources/app.asar'
+      Asar    = $asar
       Version = ($version -replace '[^0-9A-Za-z.\-]', '_')
     }
   }

@@ -14,6 +14,8 @@ for candidate in "/Applications/T3 Code (Nightly).app" "/Applications/T3 Code.ap
 done
 [ -n "$app" ] || exit 0
 asar="$app/Contents/Resources/app.asar"
+# Some builds ship the UI (server + web client) in its own server.asar.
+[ -f "$app/Contents/Resources/server.asar" ] && asar="$app/Contents/Resources/server.asar"
 [ -f "$asar" ] || exit 0
 
 # Opted out: restore.sh was run on purpose.

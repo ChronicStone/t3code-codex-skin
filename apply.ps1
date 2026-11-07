@@ -20,17 +20,18 @@ try {
   $backupDir = Join-Path $SkinRoot "backups/$($app.Version)"
   $backup = Join-Path $backupDir 'app.asar'
 
-  # Back up the pristine archive once per version (only while it is still unskinned).
-  if (-not (Test-Path $backup) -and -not (Test-Skinned $app $app.Asar)) {
+  # An unskinned archive is the original: (re)take the backup from it, so the backup always
+  # matches the installed build, even when two builds share a version number.
+  if (-not (Test-Skinned $app $app.Asar)) {
     New-Item -ItemType Directory -Path $backupDir -Force | Out-Null
-    Copy-Item -LiteralPath $app.Asar -Destination $backup
-    Write-Host "Backed up the original app.asar for $($app.Version)"
+    Copy-Item -LiteralPath $app.Asar -Destination $backup -Force
+    Write-Host "Backed up the original $(Split-Path -Leaf $app.Asar) for $($app.Version)"
     # Keep the 2 most recent version backups.
     Get-ChildItem (Join-Path $SkinRoot 'backups') -Directory | Sort-Object LastWriteTime -Descending |
       Select-Object -Skip 2 | Remove-Item -Recurse -Force
   }
 
-  # Patch a copy of the pristine archive, so re-applying never stacks patches.
+  # Patch a copy of the original, so re-applying never stacks patches.
   $base = $app.Asar
   if (Test-Path $backup) { $base = $backup }
   $copy = Join-Path $work 'app.asar'

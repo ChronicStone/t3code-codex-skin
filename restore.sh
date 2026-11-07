@@ -19,6 +19,8 @@ if [ -z "$app" ] || [ ! -d "$app" ]; then
 fi
 
 asar="$app/Contents/Resources/app.asar"
+# Some builds ship the UI (server + web client) in its own server.asar.
+[ -f "$app/Contents/Resources/server.asar" ] && asar="$app/Contents/Resources/server.asar"
 version="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$app/Contents/Info.plist")"
 backup="$here/backups/$version/app.asar"
 
