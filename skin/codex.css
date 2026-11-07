@@ -249,8 +249,25 @@ html.codex-skin [data-slot="sidebar"] [data-slot="sidebar-footer"] {
   width: var(--cx-rail);
   padding: 4px 8px 12px !important;
   z-index: 30;
-  /* The panels' shadow, continued on the rail it would fall on (the rail is opaque). */
-  background: linear-gradient(to left, var(--cx-panel-shade), transparent 10px), var(--cx-chrome);
+  background: var(--cx-chrome);
+}
+
+/* The rail is opaque (the panel slides under it on collapse), so it hides the left part of the
+ * panels' shadow. Redraw that shadow here from a box shaped exactly like the panel next to the
+ * rail (same top, bottom gap and rounded corners), clipped to the rail. A plain gradient strip
+ * had square ends where the panel is rounded, which showed as a dark bar in dark mode. */
+html.codex-skin [data-slot="sidebar"] [data-slot="sidebar-footer"]::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 4px;
+  left: 100%;
+  width: 48px;
+  z-index: -1;
+  border-radius: var(--cx-panel-radius) 0 0 var(--cx-panel-radius);
+  box-shadow: var(--cx-panel-shadow);
+  clip-path: inset(0 100% -24px -24px);
+  pointer-events: none;
 }
 
 html.codex-skin [data-slot="sidebar"] [data-slot="sidebar-footer"] [data-sidebar="menu"] {
@@ -290,6 +307,13 @@ html.codex-skin [data-slot="sidebar"] [data-slot="sidebar-footer"] [data-sidebar
 html.codex-skin [data-slot="sidebar"] [data-slot="sidebar-footer"] [data-sidebar="menu-item"].ml-auto {
   order: 98;
   margin: 0 !important;
+}
+
+/* T3 draws it as a 32px circle (filled once an update is ready); give it the rail's tile shape. */
+html.codex-skin [data-slot="sidebar"] [data-slot="sidebar-footer"] [data-sidebar="menu-item"].ml-auto .rounded-full.size-8 {
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 12.5px !important;
 }
 
 html.codex-skin .cx-rail-item,
@@ -376,12 +400,13 @@ html.codex-skin .cx-rail-avatar > img {
  * of the project's threads at work. The avatar itself stays untouched. */
 html.codex-skin .cx-rail-project-badge {
   position: absolute;
-  right: -1px;
-  bottom: -1px;
+  /* Centered on the avatar's corner, so it covers as little of the monogram as possible. */
+  right: -2px;
+  bottom: -2px;
   display: grid;
   place-items: center;
-  width: 19px;
-  height: 19px;
+  width: 17px;
+  height: 17px;
   border: 1.5px solid transparent;
   border-radius: 50%;
   background: var(--cx-chrome);
@@ -765,6 +790,14 @@ html.codex-skin [data-sidebar="sidebar"]::before {
   box-shadow: var(--cx-panel-shadow);
   /* Shadow on the outside only: none spills onto the conversation next to it. */
   clip-path: inset(-24px 0 -24px -24px);
+  transition: box-shadow 160ms ease, border-color 160ms ease;
+}
+
+/* Collapsed, the panel waits under the rail; its top shadow would still draw a dark line
+ * along the top of the rail. */
+html.codex-skin [data-slot="sidebar"][data-state="collapsed"] [data-sidebar="sidebar"]::before {
+  box-shadow: none;
+  border-color: transparent;
 }
 
 html.codex-skin .sidebar-stage-backdrop,
