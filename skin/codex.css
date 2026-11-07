@@ -779,6 +779,12 @@ html.codex-skin [data-sidebar="sidebar"] > div:first-child > div.z-10 {
   padding-left: max(0px, calc(var(--workspace-titlebar-content-left, 0px) - var(--cx-rail)));
 }
 
+/* The row above already clears the traffic lights and the toggle; T3 also gives the logo that
+ * same margin, which pushed it to the middle of the title bar. Sit it right after the toggle. */
+html.codex-skin [data-sidebar="sidebar"] a[aria-label="T3 Code home"] {
+  margin-left: 2px !important;
+}
+
 /* Search row: flat and quiet, like the Codex sidebar header. */
 html.codex-skin [data-sidebar="sidebar"] [data-slot="input-control"],
 html.codex-skin [data-sidebar="sidebar"] [data-slot="input-control"] input {
