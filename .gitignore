@@ -1,0 +1,9 @@
+# Local state, never committed
+backups/
+retired/
+*.log
+.DS_Store
+.auto-apply-off
+.auto-apply-failed
+# Built on each Mac by install-auto-apply.sh (its App Management grant is per machine)
+Codex Skin Updater.app/

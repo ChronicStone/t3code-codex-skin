@@ -1,0 +1,98 @@
+# Codex skin for T3 Code
+
+Makes [T3 Code](https://github.com/pingdotgg/t3code) look and feel like the Codex desktop app, in light and dark, without forking it. Works on **macOS** and **Windows**, and re-applies itself after every T3 Code update.
+
+What it changes:
+
+- **Codex palette and spacing**: neutral surfaces, Codex's measured row and composer tones, its blue for links and focus, and one soft lilac highlight for work in progress and the selected project.
+- **Project rail** on the left edge: every project, pinned ones first. Click to filter the sidebar to that project and open its last thread. Drag to reorder or pin, and right-click for more.
+- **Working threads**: a spinning badge with a count on each busy project, and one at the bottom of the rail that opens a list of every running thread.
+- **New thread / New chat** opens straight in the project you're in, with no picker.
+- Many smaller fixes: quieter composer chips, flat thread rows, and a collapsed sidebar that stays clean.
+
+**Ctrl+Alt+K** turns the skin on and off live.
+
+## How it works
+
+T3 Code serves its UI from `index.html` inside the app's `app.asar` archive. `apply` inlines `skin/codex.css` and `skin/codex.js` into that one file:
+
+- The new copy of the file is appended to the archive and the archive's index is pointed at it. Every other file stays byte-identical.
+- The original archive is backed up once per T3 version, under `backups/<version>/`, and the last 2 versions are kept.
+- `restore` puts the original back.
+
+An update replaces the whole app, which removes the skin. The auto-apply job below puts it back.
+
+No Node install needed: the scripts use your `node` if you have one, otherwise T3 Code's own runtime.
+
+## Setup on macOS
+
+```sh
+git clone https://github.com/ChronicStone/t3code-codex-skin.git ~/.t3/codex-skin
+cd ~/.t3/codex-skin
+./apply.sh                 # then restart T3 Code
+./install-auto-apply.sh    # re-apply after every update (one manual step, below)
+```
+
+**The one manual step**: macOS only lets apps you approve modify other apps. `install-auto-apply.sh` builds a small helper, `Codex Skin Updater.app`, opens the right Settings page and shows you the helper in Finder:
+
+1. In System Settings, open **Privacy & Security > App Management**.
+2. Drag **Codex Skin Updater** into the list, or click **+** and pick it.
+3. Switch it on.
+
+From then on, each update is followed within seconds by a "T3 Code updated… Restart now?" prompt. Choose **Restart** to see the skin right away, or **Later** to see it at your next restart. The log is in `auto-apply.log`.
+
+Two cautions:
+- Don't delete or rebuild `Codex Skin Updater.app`. macOS ties the approval to that exact copy, so you would have to approve it again.
+- If `apply.sh` says it can't write inside the app, give your terminal App Management access the same way.
+
+## Setup on Windows
+
+In PowerShell:
+
+```powershell
+git clone https://github.com/ChronicStone/t3code-codex-skin.git "$HOME\.t3\codex-skin"
+cd "$HOME\.t3\codex-skin"
+powershell -ExecutionPolicy Bypass -File .\apply.ps1 -Restart          # closes T3, applies, reopens it
+powershell -ExecutionPolicy Bypass -File .\install-auto-apply.ps1      # re-apply after every update
+```
+
+- Windows won't let a script replace a file the running app has open, so applying needs T3 closed. `-Restart` closes T3 for you, applies the skin and reopens it. Running agents stop when T3 closes.
+- `install-auto-apply.ps1` creates a Task Scheduler task, **T3 Codex Skin auto-apply**, that runs hidden at logon and every 5 minutes. It doesn't need admin rights.
+  - If T3 is closed when an update has removed the skin, the task re-applies it silently.
+  - If T3 is open, it asks once whether to restart T3 now. If you answer No, it asks again after 2 hours, or applies the skin silently at your next logon.
+- The scripts find T3 in the usual places (`%LOCALAPPDATA%\Programs\T3 Code*`, Squirrel `app-*` folders, Program Files). If yours is elsewhere, pass `-AppDir "C:\path\to\T3 Code"`.
+- The log is in `auto-apply.log`.
+
+## Everyday commands
+
+| | macOS | Windows |
+|---|---|---|
+| Apply / re-apply | `./apply.sh` | `.\apply.ps1 -Restart` |
+| Remove the skin (pauses auto-apply) | `./restore.sh` | `.\restore.ps1 -Restart` |
+| Remove auto-apply | `./install-auto-apply.sh --uninstall` | `.\install-auto-apply.ps1 -Uninstall` |
+| Update the skin | `git pull && ./apply.sh` | `git pull; .\apply.ps1 -Restart` |
+
+On Windows, run each `.ps1` as `powershell -ExecutionPolicy Bypass -File …`, as in the setup above. `restore` pauses auto-apply until you run `apply` again. If auto-apply fails on one version, it notifies you once and waits for the next update; run `apply` by hand to see the error.
+
+## Customizing
+
+- **Colors**: the `--cx-*` variables at the top of `skin/codex.css`, a light block then `.dark`.
+  - `--cx-highlight` is the single accent for work in progress and the selected project.
+  - `--cx-accent` is the blue for links and focus.
+- **Behaviour**: `skin/codex.js`. The rail's layout is stored per machine in the browser storage (`codex-skin:*` keys), so pins and order don't sync between computers.
+- **Live preview without restarting T3**: run `node lib/dev-proxy.mjs`, which serves T3 on `http://127.0.0.1:3774` with the current `skin/` files on every reload.
+  1. Run `t3 pair --scope orchestration:read` to get a pairing token.
+  2. In a browser, open `http://127.0.0.1:3774/pair#token=…` with that token.
+  3. Reload after each edit.
+- After editing, run `apply` again and restart T3 Code.
+
+## If something breaks
+
+- **A T3 update changed its markup**: the skin may look off, but the app keeps working. Toggle the skin off with Ctrl+Alt+K, or run `restore`.
+- **T3 won't start after applying**: run `restore`. It reinstalls the backed-up original for that version.
+
+This is an unofficial theme. It isn't affiliated with T3 Code or OpenAI.
+
+## License
+
+MIT

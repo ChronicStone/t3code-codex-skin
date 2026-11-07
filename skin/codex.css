@@ -1,0 +1,1643 @@
+/*
+ * Codex skin for T3 Code.
+ * Light: Codex with its Catppuccin Latte theme. Dark: Codex's own default dark theme
+ * (neutral greys, soft ink), both computed with the Codex app's theme generator.
+ * Everything is scoped to html.codex-skin so the skin can be toggled off at runtime.
+ */
+
+/* ---------- Palette ---------- */
+
+html.codex-skin {
+  --cx-chrome: #e8ebef;
+  --cx-surface: #eff1f5;
+  --cx-sidebar-panel: color-mix(in srgb, #eff1f5 65%, #e8ebef);
+  --cx-ink: #4c4f69;
+  --cx-ink-inverse: #eff1f5;
+  --cx-text-secondary: color-mix(in srgb, var(--cx-ink) 70%, transparent);
+  --cx-text-tertiary: color-mix(in srgb, var(--cx-ink) 50%, transparent);
+  --cx-row-text: color-mix(in srgb, var(--cx-ink) 88%, transparent);
+  --cx-tint-1: color-mix(in srgb, var(--cx-ink) 4%, transparent);
+  --cx-tint-2: color-mix(in srgb, var(--cx-ink) 6%, transparent);
+  --cx-tint-3: color-mix(in srgb, var(--cx-ink) 9%, transparent);
+  /* Measured on Codex: the selected row is #e4e6ec on the #edeff2 sidebar. */
+  --cx-row-selected: color-mix(in srgb, var(--cx-ink) 5.5%, transparent);
+  --cx-border: rgba(76, 79, 105, 0.078);
+  --cx-border-heavy: rgba(76, 79, 105, 0.117);
+  /* Composer: one opaque material, with the context strip one step darker behind it. */
+  /* Measured on Codex: the composer is barely lighter than the page; a crisp hairline and a
+   * tight shadow define it, not a lighter fill. */
+  --cx-composer: #f1f3f6;
+  --cx-composer-strip: #e6e9ee;
+  --cx-composer-edge: rgba(76, 79, 105, 0.16);
+  --cx-composer-radius: 16px;
+  --cx-composer-shadow: 0 1px 1px rgba(76, 79, 105, 0.05), 0 3px 10px -3px rgba(76, 79, 105, 0.1);
+  --cx-card: #f2f4f7;
+  --cx-popover: #f7f8fa;
+  /* Codex's own blue (links, focus, upgrade), not a theme violet. */
+  --cx-accent: #0169cc;
+  /* One soft highlight (lilac) for the few things that should catch the eye: work in
+   * progress and the selected project. Links and focus keep Codex's blue. */
+  --cx-highlight: #9a7fd8;
+  --cx-working: var(--cx-highlight);
+  --cx-danger: #e02e2a;
+  --cx-warning: #e25507;
+  --cx-success: #00a240;
+  --cx-selection: rgba(1, 105, 204, 0.2);
+  --cx-alert-mix: 8%;
+  --cx-update-mix: 12%;
+  --cx-rail: 52px;
+  --cx-panel-radius: 12px;
+  --cx-font: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, "Segoe UI", sans-serif;
+}
+
+/* Codex default dark: #181818 surface, white ink at contrast 60, kept soft (#dfdfdf). */
+html.codex-skin.dark {
+  --cx-chrome: #242424;
+  --cx-surface: #181818;
+  --cx-sidebar-panel: #1c1c1c;
+  --cx-ink: #dfdfdf;
+  --cx-ink-inverse: #161616;
+  --cx-text-secondary: rgba(255, 255, 255, 0.62);
+  --cx-text-tertiary: rgba(255, 255, 255, 0.44);
+  --cx-row-text: rgba(255, 255, 255, 0.8);
+  --cx-tint-1: rgba(255, 255, 255, 0.04);
+  --cx-tint-2: rgba(255, 255, 255, 0.065);
+  --cx-tint-3: rgba(255, 255, 255, 0.085);
+  --cx-row-selected: rgba(255, 255, 255, 0.06);
+  --cx-border: rgba(255, 255, 255, 0.075);
+  --cx-border-heavy: rgba(255, 255, 255, 0.13);
+  --cx-composer: #2c2c2c;
+  --cx-composer-strip: #222222;
+  --cx-composer-edge: rgba(255, 255, 255, 0.09);
+  --cx-composer-radius: 16px;
+  --cx-composer-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -6px rgba(0, 0, 0, 0.45);
+  --cx-card: #1f1f1f;
+  --cx-popover: #2a2a2a;
+  --cx-accent: #339cff;
+  --cx-highlight: #c3b2f0;
+  --cx-working: var(--cx-highlight);
+  --cx-danger: #f28b88;
+  --cx-warning: #f0a77d;
+  --cx-success: #7fcf9c;
+  --cx-selection: rgba(196, 177, 242, 0.26);
+  --cx-alert-mix: 14%;
+  --cx-update-mix: 16%;
+}
+
+/* ---------- T3 token remap ----------
+ * !important so the remap wins over T3's inline html styles and custom-theme rules.
+ */
+
+html.codex-skin,
+html.codex-skin [data-app-sidebar] {
+  --radius: 0.75rem !important;
+  --control-radius: 10px !important;
+  --background: var(--cx-surface) !important;
+  --app-chrome-background: var(--cx-chrome) !important;
+  --toolbar-background: transparent !important;
+  --toolbar-foreground: var(--cx-ink) !important;
+  --toolbar-border: transparent !important;
+  --toolbar-control: transparent !important;
+  --toolbar-control-foreground: var(--cx-text-secondary) !important;
+  --toolbar-control-hover: var(--cx-tint-2) !important;
+  --surface-raised: var(--cx-popover) !important;
+  --foreground: var(--cx-ink) !important;
+  --card: var(--cx-card) !important;
+  --card-foreground: var(--cx-ink) !important;
+  --popover: var(--cx-popover) !important;
+  --popover-foreground: var(--cx-ink) !important;
+  --primary: var(--cx-ink) !important;
+  --primary-foreground: var(--cx-ink-inverse) !important;
+  --secondary: var(--cx-tint-1) !important;
+  --secondary-foreground: var(--cx-ink) !important;
+  --muted: var(--cx-tint-1) !important;
+  --muted-foreground: var(--cx-text-secondary) !important;
+  --placeholder: var(--cx-text-tertiary) !important;
+  --secondary-label: var(--cx-text-secondary) !important;
+  --icon-muted: var(--cx-text-secondary) !important;
+  --message-surface: color-mix(in srgb, var(--cx-ink) 5%, transparent) !important;
+  --message-foreground: var(--cx-ink) !important;
+  --message-action: var(--cx-ink) !important;
+  --message-action-foreground: var(--cx-ink-inverse) !important;
+  --message-action-hover: color-mix(in srgb, var(--cx-ink) 88%, var(--cx-surface)) !important;
+  --accent: var(--cx-tint-2) !important;
+  --accent-foreground: var(--cx-ink) !important;
+  --error: var(--cx-danger) !important;
+  --error-foreground: var(--cx-danger) !important;
+  --destructive: var(--cx-danger) !important;
+  --destructive-foreground: var(--cx-danger) !important;
+  --border: var(--cx-border) !important;
+  --input: var(--cx-border-heavy) !important;
+  --ring: var(--cx-accent) !important;
+  --info: var(--cx-accent) !important;
+  --info-foreground: var(--cx-accent) !important;
+  --success: var(--cx-success) !important;
+  --success-foreground: var(--cx-success) !important;
+  --warning: var(--cx-warning) !important;
+  --warning-foreground: var(--cx-warning) !important;
+  --update: var(--cx-accent) !important;
+  --update-foreground: var(--cx-accent) !important;
+  --sidebar: transparent !important;
+  --sidebar-foreground: var(--cx-row-text) !important;
+  --sidebar-muted-foreground: var(--cx-text-tertiary) !important;
+  --sidebar-control-surface: var(--cx-tint-1) !important;
+  --sidebar-row-hover: var(--cx-tint-1) !important;
+  --sidebar-row-active: var(--cx-row-selected) !important;
+  --sidebar-row-selected: var(--cx-row-selected) !important;
+  --sidebar-border: var(--cx-border) !important;
+  --sidebar-stage-fade: transparent !important;
+  --code-background: color-mix(in srgb, var(--cx-ink) 5%, transparent) !important;
+  --code-foreground: var(--cx-ink) !important;
+  --terminal-background: var(--cx-surface) !important;
+  --terminal-foreground: var(--cx-ink) !important;
+  --terminal-cursor: var(--cx-accent) !important;
+  --terminal-selection-background: var(--cx-selection) !important;
+  --error-surface: color-mix(in srgb, var(--cx-danger) var(--cx-alert-mix), transparent) !important;
+  --warning-surface: color-mix(in srgb, var(--cx-warning) var(--cx-alert-mix), transparent) !important;
+  --update-surface: color-mix(in srgb, var(--cx-accent) var(--cx-update-mix), transparent) !important;
+  --app-scrollbar-thumb: color-mix(in srgb, var(--cx-ink) 16%, transparent) !important;
+  --app-scrollbar-thumb-hover: color-mix(in srgb, var(--cx-ink) 26%, transparent) !important;
+  /* The composer reads these custom-theme inputs directly on its own elements. */
+  --app-theme-surface-raised: var(--cx-composer) !important;
+  --app-theme-toolbar-border: var(--cx-border-heavy) !important;
+  --app-theme-input: var(--cx-border-heavy) !important;
+}
+
+/* ---------- Base ---------- */
+
+html.codex-skin,
+html.codex-skin body {
+  background-color: var(--cx-chrome) !important;
+  color: var(--cx-ink);
+}
+
+/* T3 tiles a fractal-noise grain over the window; Codex surfaces are flat. */
+html.codex-skin {
+  --surface-grain: none !important;
+}
+
+html.codex-skin body,
+html.codex-skin .surface-grain {
+  background-image: none !important;
+}
+
+html.codex-skin body {
+  font-family: var(--cx-font);
+  font-weight: 430;
+  -webkit-font-smoothing: antialiased;
+}
+
+html.codex-skin ::selection {
+  background: color-mix(in srgb, var(--cx-accent) 24%, transparent);
+}
+
+/* ---------- Icon rail (T3's sidebar footer, moved to the left edge) ---------- */
+
+html.codex-skin [data-slot="sidebar"][data-state="expanded"] [data-slot="sidebar-gap"] {
+  width: calc(var(--sidebar-width) + var(--cx-rail)) !important;
+}
+
+html.codex-skin [data-slot="sidebar"][data-state="collapsed"] [data-slot="sidebar-gap"] {
+  width: var(--cx-rail) !important;
+}
+
+html.codex-skin [data-slot="sidebar"][data-state="expanded"] [data-slot="sidebar-container"] {
+  left: var(--cx-rail) !important;
+}
+
+/* Collapsing slides the panel under the rail (which is opaque) instead of across it. */
+html.codex-skin [data-slot="sidebar"][data-state="collapsed"] [data-slot="sidebar-container"] {
+  left: calc(var(--cx-rail) - var(--sidebar-width)) !important;
+}
+
+/* The rail starts below the title row, so the panel's top row (logo, toggle) would slide under
+ * the macOS traffic lights: fade it out as the panel leaves. */
+html.codex-skin [data-slot="sidebar"] [data-sidebar="sidebar"] > div:first-child {
+  transition: opacity 120ms ease;
+}
+
+html.codex-skin [data-slot="sidebar"][data-state="collapsed"] [data-sidebar="sidebar"] > div:first-child {
+  opacity: 0;
+  pointer-events: none;
+}
+
+html.codex-skin [data-slot="sidebar-container"] {
+  border: 0 !important;
+}
+
+html.codex-skin [data-slot="sidebar"] [data-slot="sidebar-footer"] {
+  position: fixed !important;
+  left: 0;
+  top: var(--workspace-topbar-height, 52px);
+  bottom: 0;
+  width: var(--cx-rail);
+  padding: 4px 8px 12px !important;
+  z-index: 30;
+  background: var(--cx-chrome);
+}
+
+html.codex-skin [data-slot="sidebar"] [data-slot="sidebar-footer"] [data-sidebar="menu"] {
+  flex-direction: column !important;
+  align-items: center;
+  gap: 6px !important;
+  height: 100%;
+}
+
+html.codex-skin [data-slot="sidebar"] [data-slot="sidebar-footer"] [data-sidebar="menu-button"] {
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 12.5px !important;
+  color: var(--cx-text-secondary) !important;
+  justify-content: center;
+}
+
+html.codex-skin [data-slot="sidebar"] [data-slot="sidebar-footer"] [data-sidebar="menu-button"]:hover,
+html.codex-skin [data-slot="sidebar"] [data-slot="sidebar-footer"] [data-sidebar="menu-button"][data-active="true"] {
+  background: var(--cx-tint-2) !important;
+  color: var(--cx-ink) !important;
+}
+
+/* On settings pages T3 wraps the footer menu in two divs; flatten them so the menu still
+ * fills the rail. */
+html.codex-skin [data-slot="sidebar"] [data-slot="sidebar-footer"] div:has([data-sidebar="menu"]) {
+  display: contents !important;
+}
+
+/* Rail order: route items, projects, then a spacer pushes the working badge, the desktop
+ * update button and Settings to the bottom (extras are injected by codex.js). */
+html.codex-skin [data-slot="sidebar"] [data-slot="sidebar-footer"] [data-sidebar="menu-item"]:has([aria-label="Settings"]) {
+  order: 99;
+}
+
+/* Desktop update button (the only footer item with ml-auto). */
+html.codex-skin [data-slot="sidebar"] [data-slot="sidebar-footer"] [data-sidebar="menu-item"].ml-auto {
+  order: 98;
+  margin: 0 !important;
+}
+
+html.codex-skin .cx-rail-item,
+html.codex-skin .cx-rail-spacer,
+html.codex-skin .cx-rail-separator {
+  list-style: none;
+  flex: none;
+}
+
+html.codex-skin .cx-rail-item {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+html.codex-skin :is(.cx-rail-item, .cx-rail-separator)[hidden] {
+  display: none !important;
+}
+
+html.codex-skin .cx-rail-spacer {
+  flex: 1 1 auto;
+  min-height: 8px;
+}
+
+html.codex-skin .cx-rail-separator {
+  width: 18px;
+  height: 1px;
+  margin: 4px 0;
+  background: var(--cx-border-heavy);
+}
+
+html.codex-skin .cx-rail-button {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 12.5px;
+  background: transparent;
+  color: var(--cx-text-secondary);
+  cursor: pointer;
+}
+
+html.codex-skin .cx-rail-button svg {
+  width: 16px;
+  height: 16px;
+}
+
+html.codex-skin .cx-rail-button:hover,
+html.codex-skin .cx-rail-button[data-active="true"] {
+  background: var(--cx-tint-2);
+  color: var(--cx-ink);
+}
+
+html.codex-skin .cx-rail-button:focus-visible {
+  outline: 2px solid var(--cx-accent);
+  outline-offset: -2px;
+}
+
+/* Project avatars (T3's own project badges, a bit larger): favicon <img>, monogram or icon. */
+html.codex-skin .cx-rail-avatar {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+}
+
+/* Every avatar fills the same 20px box, centered: favicon <img>, monogram <span><svg>, or icon. */
+html.codex-skin .cx-rail-avatar > *,
+html.codex-skin .cx-rail-project .cx-rail-avatar svg {
+  display: block;
+  width: 20px !important;
+  height: 20px !important;
+  margin: 0 !important;
+}
+
+html.codex-skin .cx-rail-avatar > img {
+  object-fit: contain;
+}
+
+/* Working projects: one small badge on the avatar's corner, a spinning ring around the number
+ * of the project's threads at work. The avatar itself stays untouched. */
+html.codex-skin .cx-rail-project-badge {
+  position: absolute;
+  right: -1px;
+  bottom: -1px;
+  display: grid;
+  place-items: center;
+  width: 19px;
+  height: 19px;
+  border: 1.5px solid transparent;
+  border-radius: 50%;
+  background: var(--cx-chrome);
+  pointer-events: none;
+}
+
+html.codex-skin .cx-rail-project-badge[hidden] {
+  display: none;
+}
+
+html.codex-skin .cx-rail-project-badge::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1.5px solid color-mix(in srgb, var(--cx-working) 22%, transparent);
+  border-top-color: var(--cx-working);
+  border-right-color: var(--cx-working);
+  animation: cx-spin 900ms linear infinite;
+  animation-delay: var(--cx-spin-delay, 0ms);
+}
+
+html.codex-skin .cx-rail-project-count {
+  color: var(--cx-working);
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+/* Hover and the open menu tint the tile; the badge's cut-out follows the tile color. */
+html.codex-skin .cx-rail-project:is(:hover, [data-active="true"]) .cx-rail-project-badge {
+  background: linear-gradient(var(--cx-tint-2), var(--cx-tint-2)), var(--cx-chrome);
+}
+
+/* The filtered project (and "All projects" when nothing is filtered): a tinted tile plus an
+ * accent bar on the window edge, nothing drawn around the avatar. */
+html.codex-skin :is(.cx-rail-project, [data-cx-rail="all-projects"] > .cx-rail-button)[data-active="true"] {
+  background: var(--cx-tint-2);
+  box-shadow: none;
+}
+
+html.codex-skin :is(.cx-rail-project, [data-cx-rail="all-projects"] > .cx-rail-button)::after {
+  content: "";
+  position: absolute;
+  left: -8px;
+  top: 50%;
+  width: 3px;
+  height: 16px;
+  border-radius: 0 3px 3px 0;
+  background: var(--cx-highlight);
+  transform: translateY(-50%) scaleY(0);
+  transition: transform 180ms var(--cx-ease-out, ease-out);
+  pointer-events: none;
+}
+
+html.codex-skin :is(.cx-rail-project, [data-cx-rail="all-projects"] > .cx-rail-button)[data-active="true"]::after {
+  transform: translateY(-50%) scaleY(1);
+}
+
+/* Projects section: every project, pinned first, then a divider and the rest. It takes the
+ * room left between the route icons and Settings, and scrolls on its own (see codex.js). */
+html.codex-skin .cx-rail-projects {
+  flex: 0 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  list-style: none;
+}
+
+html.codex-skin .cx-rail-projects[hidden] {
+  display: none !important;
+}
+
+html.codex-skin .cx-rail-scroll {
+  position: relative;
+  min-height: 0;
+  /* Room on both sides for the active bar, which sits on the window edge. */
+  margin: 0 -8px;
+  padding: 0 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+
+html.codex-skin .cx-rail-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+html.codex-skin .cx-rail-scroll[data-fade="top"] {
+  mask-image: linear-gradient(to bottom, transparent, #000 20px);
+}
+
+html.codex-skin .cx-rail-scroll[data-fade="bottom"] {
+  mask-image: linear-gradient(to top, transparent, #000 20px);
+}
+
+html.codex-skin .cx-rail-scroll[data-fade="both"] {
+  mask-image: linear-gradient(to bottom, transparent, #000 20px, #000 calc(100% - 20px), transparent);
+}
+
+html.codex-skin .cx-rail-group {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+html.codex-skin .cx-rail-group:empty {
+  display: none;
+}
+
+html.codex-skin .cx-rail-pin-divider {
+  display: none;
+  flex: none;
+  width: 16px;
+  height: 1.5px;
+  margin: 1px 0;
+  border-radius: 1px;
+  background: var(--cx-border-heavy);
+  transition: background-color 150ms ease, width 150ms var(--cx-ease-out, ease-out);
+}
+
+html.codex-skin .cx-rail-projects:is([data-split], [data-dragging]) .cx-rail-pin-divider {
+  display: block;
+}
+
+/* While dragging into the pinned zone the divider lights up. */
+html.codex-skin .cx-rail-projects[data-drop="pinned"] .cx-rail-pin-divider {
+  width: 24px;
+  background: var(--cx-accent);
+}
+
+/* Drag: the project lifts off the rail and a soft slot marks where it will land. */
+html.codex-skin .cx-rail-placeholder {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 12.5px;
+  background: var(--cx-tint-1);
+  box-shadow: inset 0 0 0 1px var(--cx-border-heavy);
+}
+
+html.codex-skin .cx-rail-button.is-lifted {
+  position: fixed !important;
+  z-index: 2147482000;
+  margin: 0;
+  pointer-events: none;
+  background: var(--cx-popover) !important;
+  box-shadow: 0 0 0 1px var(--cx-border-heavy), 0 10px 28px rgba(0, 0, 0, 0.22) !important;
+  transform: scale(1.08);
+}
+
+html.codex-skin .cx-rail-button.is-lifted .cx-rail-avatar {
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+html.cx-rail-dragging,
+html.cx-rail-dragging * {
+  cursor: grabbing !important;
+  user-select: none !important;
+}
+
+/* Rail tooltip (one floating element, positioned by codex.js). */
+html.codex-skin .cx-tip {
+  position: fixed;
+  z-index: 2147483001;
+  padding: 4px 8px;
+  border-radius: 7px;
+  background: var(--cx-ink);
+  color: var(--cx-ink-inverse);
+  font: 500 12px/16px var(--cx-font);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-3px, -50%);
+  transition: opacity 120ms ease, transform 160ms var(--cx-ease-out, ease-out);
+}
+
+html.codex-skin .cx-tip.is-visible {
+  opacity: 1;
+  transform: translate(0, -50%);
+}
+
+html:not(.codex-skin) .cx-tip {
+  display: none;
+}
+
+/* Rail menu (right-click a project, or All projects). */
+html.codex-skin .cx-menu {
+  position: fixed;
+  z-index: 2147483001;
+  min-width: 208px;
+  max-width: 280px;
+  padding: 4px;
+  border: 1px solid var(--cx-border-heavy);
+  border-radius: 12px;
+  background: var(--cx-popover);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06), 0 12px 32px rgba(0, 0, 0, 0.16);
+  color: var(--cx-ink);
+  font: 13px/18px var(--cx-font);
+  opacity: 0;
+  transform: translateX(-4px) scale(0.98);
+  transform-origin: left top;
+  transition: opacity 120ms ease, transform 180ms var(--cx-ease-out, ease-out);
+}
+
+html.codex-skin .cx-menu.is-open {
+  opacity: 1;
+  transform: none;
+}
+
+html.codex-skin .cx-menu-title {
+  padding: 6px 10px 5px;
+  overflow: hidden;
+  color: var(--cx-text-tertiary);
+  font-size: 12px;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+html.codex-skin .cx-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: 30px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+html.codex-skin .cx-menu-item > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+html.codex-skin .cx-menu-item svg {
+  flex: none;
+  width: 15px;
+  height: 15px;
+  color: var(--cx-text-secondary);
+}
+
+html.codex-skin .cx-menu-item:not(:disabled):hover,
+html.codex-skin .cx-menu-item:focus-visible {
+  outline: none;
+  background: var(--cx-tint-2);
+}
+
+html.codex-skin .cx-menu-item:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+html.codex-skin .cx-menu-separator {
+  height: 1px;
+  margin: 4px 6px;
+  background: var(--cx-border);
+}
+
+html:not(.codex-skin) .cx-menu {
+  display: none;
+}
+
+/* Working badge: spinner with a count bubble. */
+html.codex-skin .cx-rail-working {
+  color: var(--cx-working);
+}
+
+/* Same language as the project badges, one size up: a spinning ring around the total. */
+html.codex-skin .cx-rail-spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 24px;
+  height: 24px;
+  margin: -12px 0 0 -12px;
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, var(--cx-working) 20%, transparent);
+  border-top-color: var(--cx-working);
+  border-right-color: var(--cx-working);
+  animation: cx-spin 900ms linear infinite;
+  animation-delay: var(--cx-spin-delay, 0ms);
+}
+
+html.codex-skin .cx-rail-count {
+  position: relative;
+  color: var(--cx-working);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+html.codex-skin .cx-rail-working[aria-expanded="true"] {
+  background: var(--cx-tint-2);
+}
+
+/* The project switcher drives T3's filter combobox and New thread picker; keep them invisible meanwhile. */
+html.cx-probing [role="listbox"],
+html.cx-probing [data-slot^="combobox-popup"],
+html.cx-probing [data-slot="combobox-positioner"],
+html.cx-probing [data-slot^="command-dialog"] {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Labelled footer buttons (e.g. "Back" on settings pages) become icon-only in the rail. */
+html.codex-skin [data-slot="sidebar"] [data-slot="sidebar-footer"] [data-sidebar="menu-item"] {
+  flex: none !important;
+}
+
+html.codex-skin [data-slot="sidebar"] [data-slot="sidebar-footer"] [data-sidebar="menu-button"] > span {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Footer notices (provider update, undo, Intel warning) float at the bottom of the
+ * sidebar panel instead of being crushed into the 52px rail. */
+html.codex-skin [data-slot="sidebar"] [data-slot="sidebar-footer"] > :not([data-sidebar="menu"]):not(:has([data-sidebar="menu"])) {
+  position: fixed !important;
+  left: calc(var(--cx-rail) + 8px);
+  bottom: 12px;
+  width: calc(var(--sidebar-width) - 16px) !important;
+  z-index: 31;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+html.codex-skin [data-sidebar="sidebar"]:has([data-slot="sidebar-footer"] > :not([data-sidebar="menu"]):not(:has([data-sidebar="menu"]))) [data-sidebar="content"] {
+  padding-bottom: 44px;
+}
+
+html.codex-skin [data-slot="sidebar"] [data-slot="sidebar-footer"] > [class~="group/provider-update"] {
+  background-color: var(--cx-popover);
+}
+
+html.codex-skin [data-slot="sidebar"][data-state="collapsed"] [data-slot="sidebar-footer"] > :not([data-sidebar="menu"]):not(:has([data-sidebar="menu"])) {
+  display: none !important;
+}
+
+/* ---------- Sidebar panel ---------- */
+
+html.codex-skin [data-sidebar="sidebar"] {
+  position: relative;
+  isolation: isolate;
+  background: transparent !important;
+}
+
+/* Rounded panel under everything below the 52px title row. */
+html.codex-skin [data-sidebar="sidebar"]::before {
+  content: "";
+  position: absolute;
+  inset: var(--workspace-topbar-height, 52px) 0 4px 0;
+  z-index: -1;
+  background: var(--cx-sidebar-panel);
+  border: 1px solid var(--cx-border);
+  border-radius: var(--cx-panel-radius) 0 0 var(--cx-panel-radius);
+}
+
+html.codex-skin .sidebar-stage-backdrop,
+html.codex-skin [data-sidebar="sidebar"] a[aria-label="Go to threads"],
+html.codex-skin [data-sidebar="sidebar"] div:has(> [data-environment-identification="pill"]) {
+  display: none !important;
+}
+
+/* The hidden logo used to carry the inset that clears the macOS traffic lights and the
+ * sidebar toggle; keep that inset (minus the rail the sidebar was moved by). */
+html.codex-skin [data-sidebar="sidebar"] > div:first-child > div.z-10 {
+  padding-left: max(0px, calc(var(--workspace-titlebar-content-left, 0px) - var(--cx-rail)));
+}
+
+/* Search row: flat and quiet, like the Codex sidebar header. */
+html.codex-skin [data-sidebar="sidebar"] [data-slot="input-control"],
+html.codex-skin [data-sidebar="sidebar"] [data-slot="input-control"] input {
+  background: transparent !important;
+  box-shadow: none !important;
+  border-color: transparent !important;
+  font-size: 14px !important;
+}
+
+html.codex-skin [data-sidebar="sidebar"] > div:nth-child(2) [data-sidebar="menu-button"] {
+  color: var(--cx-text-secondary) !important;
+  border-radius: 10px !important;
+}
+
+/* Section label above the thread list. */
+html.codex-skin [data-sidebar="sidebar"] > [data-sidebar="content"] > [data-sidebar="group"] > ul::before {
+  content: "Recent";
+  display: block;
+  padding: 10px 8px 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--cx-text-tertiary);
+}
+
+/* ---------- Thread rows: T3's full cards (project, title, branch), Codex styling ---------- */
+
+html.codex-skin :is([data-testid="sidebar-row-card"], [data-testid="sidebar-draft-row"]) {
+  border-radius: 10px !important;
+  opacity: 1 !important;
+  color: var(--cx-row-text) !important;
+}
+
+html.codex-skin :is([data-testid="sidebar-row-card"], [data-testid="sidebar-draft-row"]):hover {
+  background: var(--cx-tint-1) !important;
+}
+
+html.codex-skin [data-testid="sidebar-row-card"][aria-current="page"],
+html.codex-skin [data-testid="sidebar-draft-row"][aria-current="page"],
+html.codex-skin [data-testid="sidebar-draft-row"].bg-sidebar-row-active {
+  background: var(--cx-row-selected) !important;
+  color: var(--cx-ink) !important;
+}
+
+/* Codex rows have no outline: drop T3's light-mode inset ring on the selected card. */
+html.codex-skin :is([data-testid="sidebar-row-card"], [data-testid="sidebar-draft-row"]) {
+  --tw-ring-shadow: 0 0 #0000 !important;
+  box-shadow: none !important;
+}
+
+/* Drafts: no orange tint; the pencil marks them. */
+html.codex-skin [data-testid="sidebar-draft-row"]:not(.bg-sidebar-row-active):not(:hover) {
+  background: transparent !important;
+}
+
+html.codex-skin [data-testid="sidebar-draft-row"] svg.text-warning-foreground,
+html.codex-skin [data-testid="sidebar-row-card"] [aria-label="Unsent draft"] svg {
+  color: var(--cx-text-secondary) !important;
+}
+
+html.codex-skin [data-testid="sidebar-draft-divider"] {
+  background: var(--cx-border) !important;
+}
+
+/* Working threads: a real spinner instead of T3's static dashed circle, plus elapsed time.
+ * T3 renders the label as a bare "Working"/"Goal" text node, so the span drops to font-size 0
+ * (screen readers still read it) and the elapsed time gets its size back. */
+@keyframes cx-spin {
+  to { transform: rotate(360deg); }
+}
+
+html.codex-skin [data-testid^="sidebar-row-"] span.font-medium.text-info-foreground {
+  gap: 0 !important;
+  font-size: 0 !important;
+  color: var(--cx-working) !important;
+}
+
+html.codex-skin [data-testid^="sidebar-row-"] span.font-medium.text-info-foreground > svg {
+  display: none !important;
+}
+
+html.codex-skin [data-testid^="sidebar-row-"] span.font-medium.text-info-foreground::before,
+html.codex-skin [data-testid="sidebar-working-shelf-toggle"][data-cx-working="true"] > span:first-child::before {
+  content: "";
+  flex: none;
+  width: 12px;
+  height: 12px;
+  margin-right: 6px;
+  border-radius: 50%;
+  border: 1.75px solid color-mix(in srgb, var(--cx-working) 22%, transparent);
+  border-top-color: var(--cx-working);
+  animation: cx-spin 0.75s linear infinite;
+}
+
+html.codex-skin [data-testid^="sidebar-row-"] span.font-medium.text-info-foreground > span {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 450;
+  font-variant-numeric: tabular-nums;
+}
+
+/* T3's optional Working shelf: the spinner leads its label while anything works. */
+html.codex-skin [data-testid="sidebar-working-shelf-toggle"][data-cx-working="true"] > span:first-child {
+  display: inline-flex;
+  align-items: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.codex-skin .cx-rail-project-badge::before,
+  html.codex-skin .cx-rail-spinner,
+  html.codex-skin [data-testid^="sidebar-row-"] span.font-medium.text-info-foreground::before,
+  html.codex-skin [data-testid="sidebar-working-shelf-toggle"] > span:first-child::before {
+    animation-duration: 3s;
+  }
+}
+
+/* Snoozed / Settled shelves read like Codex section toggles. */
+html.codex-skin [data-testid="sidebar-snoozed-shelf-toggle"],
+html.codex-skin [data-testid="sidebar-settled-shelf-toggle"] {
+  font-size: 14px !important;
+  font-weight: 500;
+  color: var(--cx-text-tertiary) !important;
+  border-radius: 10px;
+}
+
+html.codex-skin [data-testid="sidebar-snoozed-shelf-toggle"] > *,
+html.codex-skin [data-testid="sidebar-settled-shelf-toggle"] > * {
+  color: inherit !important;
+}
+
+html.codex-skin [data-testid="sidebar-snoozed-header"] hr,
+html.codex-skin [data-testid="sidebar-settled-header"] hr,
+html.codex-skin [data-testid="sidebar-snoozed-shelf-toggle"] [data-slot="separator"],
+html.codex-skin [data-testid="sidebar-settled-shelf-toggle"] [data-slot="separator"] {
+  display: none !important;
+}
+
+/* Injected "New chat" row (see codex.js). */
+html.codex-skin .cx-new-chat {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: calc(100% - 16px);
+  height: 30px;
+  margin: 2px 8px 0;
+  padding: 5px 10px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--cx-row-text);
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+
+html.codex-skin .cx-new-chat:hover {
+  background: var(--cx-tint-1);
+  color: var(--cx-ink);
+}
+
+html.codex-skin .cx-new-chat svg {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  color: var(--cx-text-secondary);
+}
+
+/* ---------- Main panel ---------- */
+
+html.codex-skin main[data-slot="sidebar-inset"],
+html.codex-skin main[data-slot="sidebar-inset"] > div {
+  background: transparent !important;
+}
+
+/* Header lives in the chrome bar, Codex-style. */
+html.codex-skin header[data-chat-header] {
+  background: transparent !important;
+  border-bottom: 0 !important;
+  box-shadow: none !important;
+}
+
+html.codex-skin header[data-chat-header] nav[aria-label="Thread breadcrumb"] {
+  font-size: 14px;
+}
+
+html.codex-skin header[data-chat-header] li:last-child {
+  color: var(--cx-ink) !important;
+  font-weight: 500;
+}
+
+/* Content area below the header becomes the rounded surface. */
+html.codex-skin [data-chat-column-maximized-away] > header[data-chat-header] + div {
+  margin: 0 4px 4px 0;
+  border: 1px solid var(--cx-border);
+  border-left: 0;
+  border-radius: 0 var(--cx-panel-radius) var(--cx-panel-radius) 0;
+  background: var(--cx-surface);
+  overflow: hidden;
+  transition: border-radius var(--panel-animation-duration, 200ms) ease-out;
+}
+
+/* Sidebar collapsed: the main panel stands alone next to the rail, fully rounded. */
+html.codex-skin [data-slot="sidebar"][data-state="collapsed"] ~ main [data-chat-column-maximized-away] > header[data-chat-header] + div,
+html.codex-skin [data-slot="sidebar"][data-state="collapsed"] ~ main[data-slot="sidebar-inset"]:not(:has([data-chat-column-maximized-away])) > div {
+  border-left: 1px solid var(--cx-border);
+  border-radius: var(--cx-panel-radius);
+}
+
+/* T3 pads the collapsed header to clear the traffic lights from the window edge;
+ * the rail already covers part of that distance. */
+html.codex-skin [data-sidebar-state="collapsed"] [class*="[[data-sidebar-state=collapsed]_&]:pl-"] {
+  padding-left: max(8px, calc(var(--workspace-titlebar-content-left, 0px) - var(--cx-rail))) !important;
+}
+
+html.codex-skin [data-chat-canvas] .bg-background,
+html.codex-skin [data-timeline-loading] {
+  background: transparent !important;
+}
+
+/* Right panel (browser, terminal, files, diff...): its toolbar sits in the chrome bar like the
+ * chat header, and its content becomes a second rounded card next to the chat card. */
+html.codex-skin [data-preview-panel-mode] {
+  background: transparent !important;
+  border-left: 0 !important;
+}
+
+html.codex-skin [data-preview-panel-mode] [data-right-panel-surface-content] {
+  margin: 0 4px 4px 0;
+  border: 1px solid var(--cx-border);
+  border-radius: var(--cx-panel-radius);
+  background: var(--cx-surface);
+  overflow: hidden;
+}
+
+/* Surface toolbars (diff refs, file path, terminal tabs) get breathing room inside the card. */
+html.codex-skin [data-right-panel-surface-content] [data-surface-subheader] {
+  height: 44px !important;
+  min-height: 44px !important;
+  padding: 0 8px 0 12px !important;
+  border-bottom-color: var(--cx-border) !important;
+}
+
+/* Non-chat routes (settings, PRs, usage) get the same panel treatment. */
+html.codex-skin main[data-slot="sidebar-inset"]:not(:has([data-chat-column-maximized-away])) > div {
+  margin: var(--workspace-topbar-height, 52px) 4px 4px 0;
+  border: 1px solid var(--cx-border);
+  border-left: 0;
+  border-radius: 0 var(--cx-panel-radius) var(--cx-panel-radius) 0;
+  background: var(--cx-surface) !important;
+  overflow: hidden;
+}
+
+/* ---------- Conversation ---------- */
+
+html.codex-skin [data-message-role="user"] .bg-message {
+  border-radius: 22px !important;
+  padding: 10px 16px !important;
+  background: color-mix(in srgb, var(--cx-ink) 5%, transparent) !important;
+  font-size: 14px;
+  line-height: 22px;
+}
+
+html.codex-skin .chat-markdown {
+  font-size: 14px;
+  line-height: 1.625;
+}
+
+html.codex-skin .chat-markdown a {
+  color: var(--cx-accent);
+}
+
+html.codex-skin code[data-inline-code] {
+  background: color-mix(in srgb, var(--cx-ink) 5%, transparent) !important;
+  border-radius: 6px !important;
+  border: 0 !important;
+}
+
+html.codex-skin :is(.chat-markdown, .composer-tiptap) .chat-markdown-codeblock {
+  border-radius: 12px !important;
+  border-color: var(--cx-border) !important;
+  background: color-mix(in srgb, var(--cx-ink) 4%, transparent) !important;
+}
+
+/* "Worked for 39s" fold gets the Codex hairline underneath. */
+html.codex-skin [data-timeline-row-kind="turn-fold"] > * {
+  border-bottom: 1px solid var(--cx-border-heavy);
+  padding-bottom: 6px;
+}
+
+html.codex-skin [data-timeline-row-kind="turn-fold"] button {
+  font-size: 14px !important;
+  color: var(--cx-text-secondary) !important;
+}
+
+/* ---------- Composer ---------- */
+
+/* One opaque material in every state (idle, focused, running, resting after a scroll, with a
+ * banner attached). T3 paints the composer with layered glass: a clip-path "drawer" shape on
+ * the shell, a masked drawer under the strip and outline pseudo-elements with a notch for it.
+ * That geometry assumes the strip sits below the input; the skin moves it above, so every one
+ * of those layers is dropped and the surfaces below carry their own fill. */
+html.codex-skin [data-slot="composer-shell"]::before,
+html.codex-skin [data-slot="composer-context-strip"]::before,
+html.codex-skin [data-slot="composer-host"]::after,
+html.codex-skin [data-chat-composer-main-surface]::after {
+  display: none !important;
+}
+
+html.codex-skin :is([data-slot="composer-shell"], [data-slot="composer-host"], [data-chat-composer-main-surface], [data-slot="composer-context-strip"]) {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Context strip (project / checkout, or the model controls while the composer rests) sits
+ * above the input and tucks under it, like Codex. */
+html.codex-skin [data-slot="composer-shell"] {
+  display: flex !important;
+  flex-direction: column-reverse;
+}
+
+html.codex-skin [data-slot="composer-context-strip"] {
+  margin: 0 auto -20px !important;
+  width: calc(100% - 28px) !important;
+  min-height: 0;
+  padding: 3px 8px 23px !important;
+  border-radius: 14px 14px 0 0;
+  background: var(--cx-composer-strip) !important;
+  box-shadow: inset 0 0 0 1px var(--cx-border);
+  color: var(--cx-text-secondary) !important;
+}
+
+html.codex-skin [data-slot="composer-context-strip"] button,
+html.codex-skin [data-slot="composer-context-strip"] [data-composer-context-control] {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  font-size: 13px !important;
+  color: var(--cx-text-secondary) !important;
+}
+
+html.codex-skin [data-slot="composer-context-strip"] button:hover {
+  background: var(--cx-tint-2) !important;
+  color: var(--cx-ink) !important;
+}
+
+html.codex-skin [data-slot="composer-host"] {
+  box-shadow: none !important;
+  border-radius: var(--cx-composer-radius) !important;
+}
+
+html.codex-skin [data-chat-composer-main-surface] {
+  padding: 0 !important;
+  background: transparent !important;
+  border-radius: var(--cx-composer-radius) !important;
+  box-shadow: none !important;
+}
+
+html.codex-skin [data-chat-composer-surface] {
+  border-radius: var(--cx-composer-radius) !important;
+  background: var(--cx-composer) !important;
+  box-shadow: inset 0 0 0 1px var(--cx-composer-edge), var(--cx-composer-shadow) !important;
+  border: 0 !important;
+}
+
+/* Drag-over-thread highlight: keep it, as an accent ring on the same surface. */
+html.codex-skin [data-thread-context-over] [data-chat-composer-surface] {
+  box-shadow: inset 0 0 0 1.5px var(--cx-accent), var(--cx-composer-shadow) !important;
+}
+
+/* Top drawer (approvals, pending questions) and attached banners share the composer
+ * material instead of T3's tinted glass. */
+html.codex-skin [data-chat-composer-top-drawer] {
+  background: var(--cx-composer-strip) !important;
+  border-color: var(--cx-border) !important;
+  backdrop-filter: none !important;
+}
+
+/* The conversation scrolls under the composer: fade it out above, hide it below. */
+html.codex-skin [data-chat-composer-overlay].bottom-0 {
+  background: var(--cx-surface) !important;
+}
+
+html.codex-skin [data-chat-composer-overlay].bottom-0::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 100%;
+  height: 28px;
+  background: linear-gradient(to bottom, transparent, var(--cx-surface));
+  pointer-events: none;
+}
+
+/* "Scroll to end": a solid Codex pill instead of a blurred glass chip. */
+html.codex-skin [data-scroll-to-end] {
+  height: 26px !important;
+  padding: 0 10px !important;
+  background: var(--cx-popover) !important;
+  border-color: var(--cx-border-heavy) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+  backdrop-filter: none !important;
+  color: var(--cx-text-secondary) !important;
+  font-size: 12px !important;
+}
+
+html.codex-skin [data-scroll-to-end]:hover {
+  color: var(--cx-ink) !important;
+}
+
+html.codex-skin [data-testid="composer-editor"] {
+  font-size: 14px !important;
+  line-height: 20px;
+}
+
+html.codex-skin [data-chat-composer-footer] button:not([data-chat-composer-actions] *) {
+  border-color: transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  font-size: 13px !important;
+  color: var(--cx-ink) !important;
+}
+
+html.codex-skin [data-chat-composer-footer] button:not([data-chat-composer-actions] *):hover {
+  background: var(--cx-tint-2) !important;
+}
+
+html.codex-skin [data-chat-composer-footer] [data-slot="separator"] {
+  display: none !important;
+}
+
+/* Send / stop buttons: plain ink circles (drop T3's stage-art fill and red stop).
+ * Only the round buttons: split buttons like "Compact and send" keep their own shape. */
+html.codex-skin [data-chat-composer-actions="right"] button.rounded-full:is(.w-9, .size-8) {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 9999px !important;
+  background: var(--cx-ink) !important;
+  color: var(--cx-ink-inverse) !important;
+  box-shadow: none !important;
+  overflow: hidden;
+}
+
+html.codex-skin [data-chat-composer-actions="right"] button.rounded-full:is(.w-9, .size-8):disabled {
+  opacity: 0.35;
+}
+
+html.codex-skin [data-chat-composer-actions="right"] [data-stage-art] {
+  display: none !important;
+}
+
+/* "Compact" (T3 offers it when the history is long): a quiet toggle chip next to the round
+ * send button, like the composer's other chips. Pressed means "compact before sending". */
+html.codex-skin [data-chat-composer-compact-send] {
+  gap: 6px !important;
+}
+
+html.codex-skin [data-chat-composer-compact-send] button[aria-pressed] {
+  height: 28px !important;
+  padding: 0 10px !important;
+  border: 0 !important;
+  border-radius: 9999px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--cx-text-secondary) !important;
+  font-size: 13px !important;
+  font-weight: 450 !important;
+}
+
+html.codex-skin [data-chat-composer-compact-send] button[aria-pressed]:hover {
+  background: var(--cx-tint-2) !important;
+  color: var(--cx-ink) !important;
+}
+
+html.codex-skin [data-chat-composer-compact-send] button[aria-pressed="true"] {
+  background: var(--cx-tint-2) !important;
+  color: var(--cx-ink) !important;
+}
+
+/* Empty-state heading. */
+html.codex-skin [data-chat-composer-stack] h1 {
+  font-size: 28px !important;
+  font-weight: 400 !important;
+  color: var(--cx-ink) !important;
+  letter-spacing: -0.01em;
+}
+
+/* ---------- Floating surfaces ---------- */
+
+html.codex-skin [data-thread-details-card],
+html.codex-skin .dropdown-glass {
+  border-color: var(--cx-border) !important;
+}
+
+/* Sidebar search: a quiet focus state (hairline + tint) instead of an accent ring. */
+html.codex-skin [data-sidebar="sidebar"] div:has(> [data-slot="input-control"] input[aria-label="Search threads"]):focus-within {
+  background: var(--cx-tint-2) !important;
+  box-shadow: inset 0 0 0 1px var(--cx-border-heavy) !important;
+}
+
+html.codex-skin [data-sidebar="sidebar"] [data-slot="input-control"]:focus-within {
+  background: transparent !important;
+}
+
+/* New-thread palette: the location label ("Local") keeps its width; the path truncates. */
+html.codex-skin [data-testid="command-palette"] [data-slot="command-item"] .flex.min-w-0.items-center.gap-1 > .inline-flex:first-child {
+  flex-shrink: 0;
+}
+
+/* Search fields inside menus (models, projects): a quiet hairline, no accent underline. */
+html.codex-skin [data-slot$="popup"] div.border-b:focus-within {
+  border-color: var(--cx-border-heavy) !important;
+}
+
+/* Two-line select options (runtime mode...) get room between title, description and the edge. */
+html.codex-skin [data-slot="select-popup"] [data-slot="select-item"] {
+  padding: 6px 10px !important;
+}
+
+html.codex-skin [data-slot="select-popup"] [data-slot="select-item"] + [data-slot="select-item"] {
+  margin-top: 2px;
+}
+
+/* ---------- Motion ----------
+ * T3's own panel animations are optional (Settings > Appearance); the skin adds its own
+ * motion so collapsing, navigating and clicking never snap. Off with Reduce Motion.
+ */
+
+html.codex-skin {
+  --cx-ease: cubic-bezier(0.32, 0.72, 0, 1);
+  --cx-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --cx-dur-panel: 300ms;
+  --cx-dur-fast: 150ms;
+}
+
+@keyframes cx-enter {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes cx-pop {
+  from { opacity: 0; transform: scale(0.86); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes cx-panel-width {
+  from { width: 0; }
+}
+
+@keyframes cx-drawer-rows {
+  from { grid-template-rows: 0fr; }
+}
+
+@keyframes cx-card-in {
+  from { opacity: 0; transform: translateY(-4px) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Sidebar collapse / expand: the panel slides under the rail, main follows.
+   * Paused while the resize handle is dragged so resizing stays 1:1 (see codex.js). */
+  html.codex-skin:not(.cx-resizing) [data-slot="sidebar-gap"] {
+    transition: width var(--cx-dur-panel) var(--cx-ease) !important;
+  }
+
+  html.codex-skin:not(.cx-resizing) [data-slot="sidebar-container"] {
+    transition: left var(--cx-dur-panel) var(--cx-ease) !important;
+  }
+
+  /* Page changes (Settings, PRs, Usage, switching threads) ease in. */
+  html.codex-skin.cx-route-enter main[data-slot="sidebar-inset"] > div {
+    animation: cx-enter 260ms var(--cx-ease-out) both;
+  }
+
+  /* Rail icons pop in when they change (e.g. Settings swaps them for Back). */
+  html.codex-skin :is([data-slot="sidebar"] [data-slot="sidebar-footer"] [data-sidebar="menu-item"], .cx-rail-item:not([hidden])) {
+    animation: cx-pop 220ms var(--cx-ease-out) both;
+  }
+
+  html.codex-skin [data-slot="sidebar"] [data-slot="sidebar-footer"] > :not([data-sidebar="menu"]):not(:has([data-sidebar="menu"])) {
+    animation: cx-enter 260ms var(--cx-ease-out) both;
+  }
+
+  /* Right panel and terminal drawer slide open (T3 only animates them when its own
+   * "Panel animations" setting is above 0; this covers the default of 0). */
+  html.codex-skin [data-panel-animations="false"] [class*="starting:w-0"] {
+    animation: cx-panel-width 300ms var(--cx-ease);
+  }
+
+  html.codex-skin [data-panel-animations="false"] [class*="starting:grid-rows-[0fr]"] {
+    animation: cx-drawer-rows 300ms var(--cx-ease);
+  }
+
+  /* Thread details card. */
+  html.codex-skin [data-thread-details-panel="inline"] [data-thread-details-card] {
+    transform-origin: top right;
+    animation: cx-card-in 220ms var(--cx-ease-out) both;
+  }
+
+  /* Hover and press feedback. */
+  html.codex-skin :is(
+      [data-slot="sidebar"] [data-slot="sidebar-footer"] [data-sidebar="menu-button"],
+      [data-slot="sidebar"] [data-slot="sidebar-footer"] [data-sidebar="menu-item"] > button,
+      [data-sidebar="sidebar"] [data-sidebar="menu-button"],
+      [data-testid="sidebar-row-card"],
+      [data-testid="sidebar-draft-row"],
+      .cx-new-chat,
+      header[data-chat-header] button,
+      [data-chat-composer-footer] button,
+      [data-slot="composer-context-strip"] button
+    ) {
+    transition: background-color var(--cx-dur-fast) ease, color var(--cx-dur-fast) ease,
+      opacity var(--cx-dur-fast) ease, transform 180ms var(--cx-ease-out) !important;
+  }
+
+  html.codex-skin :is(
+      [data-slot="sidebar"] [data-slot="sidebar-footer"] [data-sidebar="menu-button"],
+      [data-slot="sidebar"] [data-slot="sidebar-footer"] [data-sidebar="menu-item"] > button,
+      [data-sidebar="sidebar"] [data-sidebar="menu-button"],
+      header[data-chat-header] button,
+      [data-chat-composer-footer] button
+    ):active:not(:disabled) {
+    transform: scale(0.94);
+    transition-duration: 60ms !important;
+  }
+
+  html.codex-skin :is([data-testid="sidebar-row-card"], [data-testid="sidebar-draft-row"], .cx-new-chat):active {
+    transform: scale(0.985);
+    transition-duration: 60ms !important;
+  }
+}
+
+/* ---------- Chat width ----------
+ * Text, inline renders and the composer share one column (T3's --chat-content-max-width).
+ * A bit wider than T3's 46rem, wider again when the thread details card is hidden. T3's own
+ * layout still shrinks the column to stay clear of the card, and an explicit "wide"/"full"
+ * chat width setting (:root[data-chat-width]) keeps priority.
+ */
+
+html.codex-skin {
+  --chat-content-max-width: 50rem;
+}
+
+html.codex-skin:not(:has([data-thread-details-card])) {
+  --chat-content-max-width: 58rem;
+}
+
+/* ---------- Inline HTML renders ----------
+ * Frames take their measured height (set by codex.js) instead of T3's stored cap.
+ */
+
+html.codex-skin [data-cx-frame-height] {
+  height: var(--cx-frame-height) !important;
+}
+
+/* ---------- Full-screen viewer ----------
+   Overlay opened by codex.js for render images/charts (via the visual kit), whole renders
+   (expand button on each render box) and chat images. */
+html.codex-skin [data-cx-frame-height] {
+  position: relative;
+}
+
+.cx-expand {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, var(--foreground) 12%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--background) 88%, transparent);
+  color: var(--muted-foreground);
+  backdrop-filter: blur(8px);
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(-2px);
+  transition: opacity 0.15s ease, transform 0.15s ease, color 0.15s ease;
+}
+
+:hover > .cx-expand,
+.cx-expand:focus-visible {
+  opacity: 1;
+  transform: none;
+}
+
+.cx-expand:hover {
+  color: var(--foreground);
+}
+
+html.codex-skin [data-timeline-row-kind] img:not(a img, button img) {
+  cursor: zoom-in;
+}
+
+.cx-viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483000;
+  display: flex;
+  padding: 48px;
+  overflow: auto;
+  background: color-mix(in srgb, var(--background) 70%, transparent);
+  backdrop-filter: blur(16px) saturate(1.1);
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+
+.cx-viewer.is-open {
+  opacity: 1;
+}
+
+.cx-viewer > :first-child {
+  margin: auto;
+  transform: scale(0.98);
+  transition: transform 0.18s ease;
+}
+
+.cx-viewer.is-open > :first-child {
+  transform: none;
+}
+
+.cx-viewer-image {
+  display: block;
+  max-width: 100%;
+  max-height: calc(100vh - 96px);
+  border-radius: 12px;
+  background: var(--background);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--foreground) 10%, transparent), 0 24px 80px rgb(0 0 0 / 0.25);
+  cursor: zoom-in;
+}
+
+.cx-viewer-image.is-actual {
+  max-width: none;
+  max-height: none;
+  cursor: zoom-out;
+}
+
+.cx-viewer-panel {
+  width: min(1320px, 100%);
+  height: calc(100vh - 96px);
+  padding: 28px 32px;
+  box-sizing: border-box;
+  border-radius: 16px;
+  background: var(--background);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--foreground) 10%, transparent), 0 24px 80px rgb(0 0 0 / 0.25);
+}
+
+.cx-viewer-panel > iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: transparent;
+}
+
+.cx-viewer-close {
+  position: fixed;
+  top: 14px;
+  right: 16px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, var(--foreground) 12%, transparent);
+  border-radius: 9px;
+  background: var(--background);
+  color: var(--foreground);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+/* Working threads popover, opened from the rail's working badge. */
+html.codex-skin .cx-working-menu {
+  width: 320px;
+  max-width: 320px;
+  max-height: min(420px, calc(100vh - 16px));
+  overflow-y: auto;
+  transform-origin: left bottom;
+}
+
+html.codex-skin .cx-working-menu .cx-menu-item.cx-working-item {
+  height: auto;
+  min-height: 48px;
+  gap: 10px;
+  padding: 7px 10px;
+}
+
+html.codex-skin .cx-working-avatar {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+}
+
+html.codex-skin .cx-working-item .cx-working-avatar > *,
+html.codex-skin .cx-working-item .cx-working-avatar svg {
+  display: block;
+  width: 20px !important;
+  height: 20px !important;
+  margin: 0 !important;
+  color: var(--cx-text-secondary);
+}
+
+html.codex-skin .cx-working-item > .cx-working-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  overflow: visible;
+  white-space: normal;
+}
+
+html.codex-skin .cx-working-title,
+html.codex-skin .cx-working-project {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+html.codex-skin .cx-working-title {
+  color: var(--cx-ink);
+  font-weight: 500;
+}
+
+html.codex-skin .cx-working-meta {
+  display: flex;
+  gap: 6px;
+  min-width: 0;
+  color: var(--cx-text-tertiary);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+html.codex-skin .cx-working-project {
+  min-width: 0;
+}
+
+html.codex-skin .cx-working-time {
+  flex: none;
+  font-variant-numeric: tabular-nums;
+}
+
+html.codex-skin .cx-working-time:not(:empty)::before {
+  content: "·";
+  margin-right: 6px;
+}
+
+html.codex-skin .cx-working-project:empty + .cx-working-time::before {
+  content: none;
+}
+
+html.codex-skin .cx-working-item > .cx-working-spinner {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1.75px solid color-mix(in srgb, var(--cx-working) 22%, transparent);
+  border-top-color: var(--cx-working);
+  border-right-color: var(--cx-working);
+  animation: cx-spin 900ms linear infinite;
+  animation-delay: var(--cx-spin-delay, 0ms);
+}
+
+html.codex-skin .cx-working-item[aria-current="true"] {
+  background: var(--cx-tint-1);
+}
+
+html.codex-skin .cx-working-item[aria-current="true"] .cx-working-title::after {
+  content: " · open";
+  color: var(--cx-text-tertiary);
+  font-weight: 400;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.codex-skin .cx-working-item > .cx-working-spinner {
+    animation-duration: 3s;
+  }
+}
