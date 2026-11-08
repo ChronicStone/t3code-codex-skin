@@ -66,9 +66,10 @@ powershell -ExecutionPolicy Bypass -File .\install-auto-apply.ps1      # re-appl
 
 ## Skin updates from inside T3
 
-The palette button at the bottom of the rail, above Settings, shows the skin's version and checks this repo for new commits. It gets a small lilac dot when an update is waiting.
+The palette button at the bottom of the rail, above Settings, shows the skin's version (for example "Version 1.4.0") and checks this repo for new commits. It gets a small lilac dot when an update is waiting, and the menu then shows the new version and what's new in it, from [`CHANGELOG.md`](CHANGELOG.md).
 
 - **Update & restart** pulls the repo, applies the skin and restarts T3 Code.
+- **Changelog** opens the full list of changes.
 - **Check for updates** looks right away. Otherwise the button checks when T3 starts, then every 30 minutes.
 
 A web page can't run git or restart an app, so the button talks to a small local helper, `lib/agent.mjs`. It listens on `127.0.0.1:47391` only and answers only the skin, which carries a per-machine secret from `.agent-token`. The `install-auto-apply` scripts start it: a second LaunchAgent on macOS, the existing scheduled task on Windows. On macOS, applying still goes through `Codex Skin Updater.app`, so you don't approve anything new. If the button says "Updater not running", run the `install-auto-apply` script again.
@@ -97,6 +98,16 @@ On Windows, run each `.ps1` as `powershell -ExecutionPolicy Bypass -File …`, a
   2. In a browser, open `http://127.0.0.1:3774/pair#token=…` with that token.
   3. Reload after each edit.
 - After editing, run `apply` again and restart T3 Code.
+
+## Versions and releases
+
+The version lives in `VERSION` and follows [semantic versioning](https://semver.org): a patch (1.4.1) fixes something, a minor (1.5.0) adds something, a major (2.0.0) needs a manual step from people who installed it. Every release has a section in [`CHANGELOG.md`](CHANGELOG.md), written for people who use the skin, and a `v1.4.0` tag with a GitHub release.
+
+To release:
+
+1. Bump `VERSION`, and add a `## 1.5.0 (YYYY-MM-DD)` section at the top of `CHANGELOG.md`, one `- **What**: what it does for you.` line per change.
+2. Commit both with the change.
+3. Run `node lib/release.mjs`. It checks the version against the changelog and the last tag, then tags, pushes, and creates the GitHub release. `--check` only checks.
 
 ## If something breaks
 

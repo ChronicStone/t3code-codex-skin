@@ -80,6 +80,7 @@
     palette: icon(
       '<path d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z"/><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/>',
     ),
+    notes: icon('<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 13h6"/><path d="M10 17h6"/><path d="M8 13h.01"/><path d="M8 17h.01"/>'),
     download: icon('<path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/>'),
   };
 
@@ -1324,6 +1325,10 @@
   // run git or restart T3 itself. build-html.mjs bakes the revision, port and token into the page.
   const skinConfig = window.__codexSkin ?? null;
   const skinUpdate = { data: null, error: null, checkedAt: 0, checking: false, updating: false };
+  // The version this page was built from (VERSION, baked in by build-html.mjs).
+  const skinVersion = skinConfig?.version ?? null;
+  const CHANGELOG_URL = "https://github.com/ChronicStone/t3code-codex-skin/blob/main/CHANGELOG.md";
+  const NEWS_SHOWN = 4;
 
   const agentFetch = async (path, init = {}) => {
     const response = await fetch(`http://127.0.0.1:${skinConfig.agent.port}${path}`, {
@@ -1395,10 +1400,11 @@
       headline = "Couldn't update";
       detail = skinUpdate.error;
     } else if (pending === "update") {
-      headline = data.behind === 1 ? "1 update available" : `${data.behind} updates available`;
-      detail = "Pulls the skin repo, applies it and restarts T3 Code.";
+      const next = data.latest?.version;
+      headline = next && next !== skinVersion ? `Version ${next} available` : data.behind === 1 ? "1 update available" : `${data.behind} updates available`;
+      detail = "Updating pulls it, applies it and restarts T3 Code.";
     } else if (pending === "apply") {
-      headline = "New skin ready";
+      headline = data.version && data.version !== skinVersion ? `Version ${data.version} ready` : "New skin ready";
       detail = "Restart T3 Code to apply it.";
     } else if (data) {
       headline = "Up to date";
@@ -1410,12 +1416,27 @@
     const entries = [
       {
         note: (div) => {
-          div.innerHTML = '<span class="cx-skin-headline"></span><span class="cx-skin-detail"></span><span class="cx-skin-version"></span>';
+          div.innerHTML = '<span class="cx-skin-headline"></span><ul class="cx-skin-news"></ul><span class="cx-skin-detail"></span><span class="cx-skin-version"></span>';
           div.dataset.state = skinUpdate.updating ? "busy" : pending ? "pending" : skinUpdate.error ? "error" : "ok";
           div.children[0].textContent = headline;
-          div.children[1].textContent = detail;
-          div.children[1].hidden = !detail;
-          div.children[2].textContent = `Version ${data?.head ?? skinConfig.rev.slice(0, 7)}`;
+          // What's new: the waiting releases' entries, newest first.
+          const news = pending === "update" && !skinUpdate.updating ? (data.latest?.releases ?? []).flatMap((release) => release.items) : [];
+          for (const item of news.slice(0, NEWS_SHOWN)) {
+            const li = document.createElement("li");
+            li.textContent = item.title ?? item.text;
+            if (item.title && item.text) li.title = item.text;
+            div.children[1].append(li);
+          }
+          if (news.length > NEWS_SHOWN) {
+            const li = document.createElement("li");
+            li.className = "cx-skin-news-more";
+            li.textContent = `and ${news.length - NEWS_SHOWN} more`;
+            div.children[1].append(li);
+          }
+          div.children[1].hidden = !news.length;
+          div.children[2].textContent = detail;
+          div.children[2].hidden = !detail;
+          div.children[3].textContent = !skinVersion ? "Version unknown" : pending ? `You have ${skinVersion}` : `Version ${skinVersion}`;
         },
       },
       "separator",
@@ -1427,6 +1448,16 @@
         action: () => runSkinUpdate(anchor),
       });
     }
+    entries.push({
+      label: "Changelog",
+      icon: ICONS.notes,
+      action: () => {
+        closeMenu(true);
+        // Desktop: T3 hands the link to the default browser. Browser build: a new tab.
+        if (window.desktopBridge?.openExternal) window.desktopBridge.openExternal(CHANGELOG_URL).catch(() => {});
+        else window.open(CHANGELOG_URL, "_blank", "noopener");
+      },
+    });
     entries.push({
       label: skinUpdate.checking ? "Checking…" : "Check for updates",
       icon: ICONS.reset,
