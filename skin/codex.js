@@ -1328,7 +1328,7 @@
   const agentFetch = async (path, init = {}) => {
     const response = await fetch(`http://127.0.0.1:${skinConfig.agent.port}${path}`, {
       ...init,
-      headers: { "x-codex-skin-token": skinConfig.agent.token },
+      headers: { ...init.headers, "x-codex-skin-token": skinConfig.agent.token },
       signal: AbortSignal.timeout(path.startsWith("/update") ? 120_000 : 30_000),
     });
     const body = await response.json().catch(() => ({}));
@@ -1487,6 +1487,99 @@
     ensureWorkingShelf();
     rememberFocusedThread();
     maybeHarvest();
+  };
+
+  // ---------- Stop & steer ----------
+  // A message steered into a running turn waits until the current tool call ends. When that call
+  // is a shell command, "Stop & steer" next to the message's "Steer" label asks the local agent
+  // (lib/stop-command.mjs) to kill it, so the message lands now. The turn itself goes on.
+  const stopSteer = { busy: false, error: null, errorTimer: 0 };
+
+  const currentThreadId = () => {
+    const segment = routePath().split("/").filter(Boolean)[1];
+    if (!segment) return null;
+    try {
+      return decodeURIComponent(segment);
+    } catch {
+      return null;
+    }
+  };
+
+  // The steered message still waits when it is the timeline's last row and a shell command is
+  // running just above it. Once delivered, the agent's work and reply follow it.
+  const pendingSteer = () => {
+    const rows = document.querySelectorAll("[data-timeline-root] [data-timeline-row-kind]");
+    // Several steered messages in a row: only the first carries the label.
+    let i = rows.length - 1;
+    let label = null;
+    for (; i >= 0 && rows[i].dataset.timelineRowKind === "message" && rows[i].dataset.messageRole === "user"; i--) {
+      label = rows[i].querySelector("[data-user-message-intent]") ?? label;
+    }
+    if (!label) return null;
+    for (; i >= 0; i--) {
+      const kind = rows[i].dataset.timelineRowKind;
+      if (kind === "message") return null;
+      if (kind === "work-live") return rows[i].querySelector(".lucide-terminal") ? label : null;
+    }
+    return null;
+  };
+
+  const runStopSteer = async () => {
+    const threadId = currentThreadId();
+    if (!threadId || stopSteer.busy) return;
+    stopSteer.busy = true;
+    stopSteer.error = null;
+    schedule();
+    try {
+      const result = await agentFetch("/stop-command", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ threadId }),
+      });
+      if (!result.ok) throw new Error(result.error ?? "Couldn't stop the command.");
+    } catch (error) {
+      stopSteer.error = error instanceof TypeError || error.name === "TimeoutError" ? "Skin agent isn't running." : error.message;
+      clearTimeout(stopSteer.errorTimer);
+      stopSteer.errorTimer = setTimeout(() => {
+        stopSteer.error = null;
+        schedule();
+      }, 5000);
+    } finally {
+      // Keep "Stopping…" until the message is delivered and the button goes away.
+      setTimeout(() => {
+        stopSteer.busy = false;
+        schedule();
+      }, stopSteer.error ? 0 : 4000);
+    }
+  };
+
+  let stopSteerButton = null;
+  const ensureStopSteer = () => {
+    const label = skinConfig && /Mac/.test(navigator.platform) ? pendingSteer() : null;
+    if (!label) {
+      stopSteerButton?.remove();
+      return;
+    }
+    if (!stopSteerButton) {
+      stopSteerButton = document.createElement("button");
+      stopSteerButton.type = "button";
+      stopSteerButton.className = "cx-stop-steer";
+      stopSteerButton.innerHTML = '<i aria-hidden="true"></i><span></span>';
+      stopSteerButton.addEventListener("click", (event) => {
+        event.stopPropagation();
+        runStopSteer();
+      });
+    }
+    const container = label.parentElement;
+    if (stopSteerButton.parentElement !== container) container.insertBefore(stopSteerButton, label);
+    // Sits on the label's line, just left of it (the container stacks label and bubble).
+    stopSteerButton.style.setProperty("--cx-steer-right", `${container.clientWidth - label.offsetLeft + 6}px`);
+    stopSteerButton.style.setProperty("--cx-steer-top", `${label.offsetTop + label.offsetHeight / 2}px`);
+    const text = stopSteer.error ?? (stopSteer.busy ? "Stopping…" : "Stop & steer");
+    setIfChanged(stopSteerButton.lastChild, "textContent", text);
+    setAttrIfChanged(stopSteerButton, "data-state", stopSteer.error ? "error" : stopSteer.busy ? "busy" : null);
+    setAttrIfChanged(stopSteerButton, "title", stopSteer.error ? null : "Stop the running command so this message lands now");
+    setIfChanged(stopSteerButton, "disabled", stopSteer.busy);
   };
 
   // Page-change animation: flag the root for one animation cycle whenever the path changes.
@@ -1776,6 +1869,7 @@
       scheduled = false;
       ensureNewChatRow();
       ensureRail();
+      ensureStopSteer();
     });
   };
 

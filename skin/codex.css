@@ -1762,3 +1762,79 @@ html.codex-skin .cx-rail-button[data-attention="true"]::before {
   background: var(--cx-highlight);
   box-shadow: 0 0 0 2px var(--cx-chrome);
 }
+
+/* Stop & steer: on the line of a waiting "Steer" label, left of it. Quiet until hovered. */
+html.codex-skin [data-user-message-attribution]:has(> .cx-stop-steer) {
+  position: relative;
+}
+
+.cx-stop-steer {
+  display: none;
+}
+
+html.codex-skin .cx-stop-steer {
+  position: absolute;
+  top: var(--cx-steer-top, 6px);
+  right: var(--cx-steer-right, 60px);
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 20px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--cx-text-tertiary);
+  font: inherit;
+  font-size: 12px;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+html.codex-skin .cx-stop-steer::after {
+  content: "";
+  position: absolute;
+  right: -4px;
+  top: 50%;
+  width: 1px;
+  height: 11px;
+  transform: translateY(-50%);
+  background: var(--cx-border-heavy);
+}
+
+html.codex-skin .cx-stop-steer i {
+  width: 7px;
+  height: 7px;
+  border-radius: 1.5px;
+  background: currentColor;
+}
+
+html.codex-skin .cx-stop-steer:hover,
+html.codex-skin .cx-stop-steer:focus-visible {
+  outline: none;
+  background: color-mix(in srgb, var(--cx-danger) 9%, transparent);
+  color: var(--cx-danger);
+}
+
+html.codex-skin .cx-stop-steer[data-state="busy"] {
+  cursor: default;
+  background: transparent;
+  color: var(--cx-text-tertiary);
+}
+
+html.codex-skin .cx-stop-steer[data-state="busy"] i {
+  animation: cx-stop-steer-pulse 900ms ease-in-out infinite alternate;
+}
+
+html.codex-skin .cx-stop-steer[data-state="error"] {
+  color: var(--cx-warning);
+}
+
+@keyframes cx-stop-steer-pulse {
+  to {
+    opacity: 0.3;
+  }
+}

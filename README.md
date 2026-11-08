@@ -8,6 +8,7 @@ What it changes:
 - **Project rail** on the left edge: every project, pinned ones first. Click to filter the sidebar to that project and open its last thread. Drag to reorder or pin, and right-click for more.
 - **Working threads**: a spinning badge with a count on each busy project, and one at the bottom of the rail that opens a list of every running thread.
 - **New thread / New chat** opens straight in the project you're in, with no picker.
+- **Stop & steer** (macOS): a message steered into a running turn waits for the current command to end. The button next to its "Steer" label stops that shell command, so your message lands now and the turn goes on. Jobs started detached keep running.
 - Many smaller fixes: quieter composer chips, flat thread rows, and a collapsed sidebar that stays clean.
 
 **Ctrl+Alt+K** turns the skin on and off live.
