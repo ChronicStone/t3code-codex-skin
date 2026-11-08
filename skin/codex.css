@@ -1799,9 +1799,29 @@ html.codex-skin .cx-rail-button[data-attention="true"]::before {
   box-shadow: 0 0 0 2px var(--cx-chrome);
 }
 
-/* Stop & steer: on the line of a waiting "Steer" label, left of it. Quiet until hovered. */
+/* Stop & steer: in the row of a waiting "Steer" label, left of it. The message's column (label,
+   then bubble) becomes a two-column grid while the button is there: button and label share the
+   first row, everything else spans both columns below. No measuring, so nothing can overlap. */
 html.codex-skin [data-user-message-attribution]:has(> .cx-stop-steer) {
-  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  justify-items: end;
+  align-items: center;
+  column-gap: 7px;
+}
+
+html.codex-skin [data-user-message-attribution]:has(> .cx-stop-steer) > * {
+  grid-column: 1 / -1;
+}
+
+html.codex-skin [data-user-message-attribution] > .cx-stop-steer {
+  grid-row: 1;
+  grid-column: 1;
+}
+
+html.codex-skin [data-user-message-attribution]:has(> .cx-stop-steer) > [data-user-message-intent] {
+  grid-row: 1;
+  grid-column: 2;
 }
 
 .cx-stop-steer {
@@ -1809,10 +1829,7 @@ html.codex-skin [data-user-message-attribution]:has(> .cx-stop-steer) {
 }
 
 html.codex-skin .cx-stop-steer {
-  position: absolute;
-  top: var(--cx-steer-top, 6px);
-  right: var(--cx-steer-right, 60px);
-  transform: translateY(-50%);
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -1830,6 +1847,7 @@ html.codex-skin .cx-stop-steer {
   transition: background-color 120ms ease, color 120ms ease;
 }
 
+/* Hairline between the button and the label, centred in the column gap. */
 html.codex-skin .cx-stop-steer::after {
   content: "";
   position: absolute;

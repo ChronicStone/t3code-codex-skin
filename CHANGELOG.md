@@ -7,6 +7,11 @@ to do something by hand, such as re-running the setup.
 The skin's menu (the palette button at the bottom of the rail) shows the version you run, and the
 entries below when an update is waiting.
 
+## 1.4.1 (2026-11-08)
+
+- **Stop & steer**: the button no longer overlaps the "Steer" label when you hover it. It now
+  shares the label's row instead of being placed by measuring.
+
 ## 1.4.0 (2026-11-08)
 
 - **Versions and changelog**: the skin now has a version number and this changelog. The skin menu

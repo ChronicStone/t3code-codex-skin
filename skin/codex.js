@@ -1601,11 +1601,9 @@
         runStopSteer();
       });
     }
+    // Sits in the label's row, left of it: the CSS turns the message's column into a grid.
     const container = label.parentElement;
     if (stopSteerButton.parentElement !== container) container.insertBefore(stopSteerButton, label);
-    // Sits on the label's line, just left of it (the container stacks label and bubble).
-    stopSteerButton.style.setProperty("--cx-steer-right", `${container.clientWidth - label.offsetLeft + 6}px`);
-    stopSteerButton.style.setProperty("--cx-steer-top", `${label.offsetTop + label.offsetHeight / 2}px`);
     const text = stopSteer.error ?? (stopSteer.busy ? "Stopping…" : "Stop & steer");
     setIfChanged(stopSteerButton.lastChild, "textContent", text);
     setAttrIfChanged(stopSteerButton, "data-state", stopSteer.error ? "error" : stopSteer.busy ? "busy" : null);
